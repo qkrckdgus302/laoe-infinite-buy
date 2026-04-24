@@ -82,15 +82,12 @@
             <button class="btn-toggle active" data-value="30">30분할</button>
             <button class="btn-toggle" data-value="40">40분할</button>
           </div>
+          <small class="hint">적을수록 공격적, 클수록 안정적</small>
         </div>
         <div class="form-group">
-          <label>원금 ($)</label>
-          <input type="number" id="setup-capital" placeholder="투자 원금" min="1" class="input">
-        </div>
-        <div class="form-group">
-          <label>목표 수익률 (%)</label>
+          <label>목표 수익률 (%)<span class="hint-right" id="setup-target-default">기본 15% (라오어 원칙)</span></label>
           <input type="number" id="setup-target" placeholder="미입력 시 기본값" class="input">
-          <small class="hint">TQQQ: 15%, SOXL: 20% 기본</small>
+          <small class="hint">별%, 지정가매도 가격, 리버스 복귀 조건에 적용됩니다</small>
         </div>
         <div class="form-group">
           <label>진입 방식</label>
@@ -98,6 +95,16 @@
             <button class="btn-toggle active" data-value="new">새로 시작</button>
             <button class="btn-toggle" data-value="mid">중간 진입</button>
           </div>
+        </div>
+        <div class="form-group">
+          <label>원금 ($)</label>
+          <input type="number" id="setup-capital" placeholder="투자 원금" min="1" class="input">
+        </div>
+        <!-- 미리보기 -->
+        <div class="setup-preview" id="setup-preview" style="display:none;">
+          <div class="sp-row"><span>원금</span><strong id="sp-capital">-</strong></div>
+          <div class="sp-row"><span>분할</span><strong id="sp-splits">-</strong></div>
+          <div class="sp-row"><span>1회 매수금</span><strong id="sp-buy-amount">-</strong></div>
         </div>
         <div id="mid-entry-fields" style="display:none;">
           <div class="form-group">
@@ -114,6 +121,7 @@
           </div>
         </div>
         <button id="btn-start-session" class="btn-primary full-width">시작하기</button>
+        <p class="setup-footer-hint">초심자는 TQQQ 추천, 익숙해지면 SOXL</p>
       </div>
     </div>
 

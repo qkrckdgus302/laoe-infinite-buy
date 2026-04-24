@@ -99,8 +99,41 @@
         const nameInput = document.getElementById('setup-name');
         if (nameInput) nameInput.placeholder = `예: ${t} ${s}분할`;
       }
+
+      // Ticker change → auto-fill target profit + update hint
+      if (group.id === 'setup-ticker') {
+        const t = toggle.dataset.value;
+        const defaultPct = t === 'SOXL' ? 20 : 15;
+        const targetInput = document.getElementById('setup-target');
+        if (targetInput) targetInput.value = defaultPct;
+        const hintEl = document.getElementById('setup-target-default');
+        if (hintEl) hintEl.textContent = `기본 ${defaultPct}% (라오어 원칙)`;
+      }
+
+      // Update setup preview on any toggle change
+      if (group.id === 'setup-ticker' || group.id === 'setup-splits') {
+        updateSetupPreview();
+      }
     }
   });
+
+  // Setup capital input → update preview
+  document.getElementById('setup-capital')?.addEventListener('input', updateSetupPreview);
+
+  function updateSetupPreview() {
+    const capital = Number(document.getElementById('setup-capital')?.value) || 0;
+    const splits = Number(UI.getToggleValue('setup-splits')) || 30;
+    const preview = document.getElementById('setup-preview');
+    if (!preview) return;
+    if (capital > 0) {
+      preview.style.display = '';
+      document.getElementById('sp-capital').textContent = '$' + capital.toLocaleString();
+      document.getElementById('sp-splits').textContent = splits + '회';
+      document.getElementById('sp-buy-amount').textContent = '$' + (capital / splits).toFixed(2);
+    } else {
+      preview.style.display = 'none';
+    }
+  }
 
   // Session tabs
   document.getElementById('tab-list')?.addEventListener('click', function (e) {

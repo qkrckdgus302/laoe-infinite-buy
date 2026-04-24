@@ -760,6 +760,49 @@ body {
   .t-value-display { font-size: 1.4rem; }
 }
 
+/* ===== Setup Preview Card ===== */
+.setup-preview {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.sp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.sp-row span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.sp-row strong {
+  font-size: 0.95rem;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+/* --- Hint right-aligned --- */
+.hint-right {
+  float: right;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--primary);
+}
+
+/* --- Setup footer hint --- */
+.setup-footer-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 12px;
+}
+
 @media (min-width: 481px) {
   .modal-content {
     border-radius: var(--radius);
