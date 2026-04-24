@@ -42,11 +42,14 @@ async function tryYahooChart(ticker, days) {
         volume: quotes.volume?.[i] || 0,
       })).filter(p => p.close !== null).slice(-days);
 
+      // previousClose = 가장 최근 거래일의 종가 (prices 배열의 마지막)
+      const lastClose = prices.length > 0 ? prices[prices.length - 1].close : null;
+
       return {
         ticker: meta.symbol || ticker,
         currency: meta.currency || 'USD',
         currentPrice: meta.regularMarketPrice ? Math.round(meta.regularMarketPrice * 100) / 100 : null,
-        previousClose: meta.chartPreviousClose ? Math.round(meta.chartPreviousClose * 100) / 100 : null,
+        previousClose: lastClose,
         prices,
       };
     } catch { continue; }
