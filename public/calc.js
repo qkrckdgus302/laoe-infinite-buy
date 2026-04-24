@@ -147,7 +147,21 @@ function calcState(settings, transactions, midEntry) {
 // 주문 생성 (Ap 함수)
 function generateOrders(state, settings, reverseInfo, lastClosePrice) {
   const orders = [];
-  if (state.phase === '처음매수' || state.phase === '종료') return orders;
+  if (state.phase === '종료') return orders;
+
+  // 처음매수: 큰수 LOC 매수 + 추가 하방 LOC
+  if (state.phase === '처음매수') {
+    if (!lastClosePrice || state.buyAmount <= 0) return orders;
+    const bigNumPrice = Math.round(lastClosePrice * 1.12 * 100) / 100;
+    const mainQty = Math.max(1, Math.floor(state.buyAmount / bigNumPrice));
+    orders.push({ label: '큰수매수', type: 'buy', method: 'LOC', price: bigNumPrice, quantity: mainQty });
+    for (let i = 1; i <= 8; i++) {
+      const p = Math.floor(state.buyAmount / (mainQty + i) * 100) / 100;
+      if (p < 1) break;
+      orders.push({ label: '', type: 'buy', method: 'LOC', price: p, quantity: 1 });
+    }
+    return orders;
+  }
 
   // 리버스 모드
   if (reverseInfo) {

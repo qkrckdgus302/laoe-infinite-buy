@@ -226,16 +226,32 @@ const UI = {
       html += `<div class="fbi-row"><span>1회 매수금</span><strong class="fbi-amount">$${buyAmount.toFixed(2)}</strong></div>`;
 
       if (prevClose) {
-        const loc10 = Math.round(prevClose * 1.10 * 100) / 100;
-        const loc15 = Math.round(prevClose * 1.15 * 100) / 100;
-        html += `<div class="fbi-close">전일 종가 <strong>$${prevClose.toFixed(2)}</strong> 기준</div>`;
-        html += `<div class="fbi-locs">`;
-        html += `<div class="fbi-loc"><span class="fbi-loc-label">+10% LOC</span><span class="fbi-loc-price">$${loc10.toFixed(2)}</span></div>`;
-        html += `<div class="fbi-loc"><span class="fbi-loc-label">+15% LOC</span><span class="fbi-loc-price">$${loc15.toFixed(2)}</span></div>`;
-        html += `</div>`;
-        html += `<p class="fbi-hint">전일 종가의 <strong>10~15% 위</strong> 가격으로 LOC 매수를 설정하세요.</p>`;
-        html += `<p class="fbi-hint">체결되면 아래 <strong>오늘 기록하기</strong> 버튼으로 기록해주세요.</p>`;
+        html += `<div class="fbi-close">전일 종가 <strong>$${prevClose.toFixed(2)}</strong> 기준 (종가×1.12)</div>`;
       }
+
+      // 주문표 표시 (orders에 처음매수 주문이 있음)
+      if (orders.length > 0) {
+        html += '<div class="order-group" style="margin-top:12px;"><div class="order-section-title"><span class="order-dot buy-dot"></span> 매수 주문표</div>';
+        for (const o of orders) {
+          const methodClass = 'badge-loc';
+          html += `<div class="order-row">
+            <div class="order-row-left">
+              <span class="order-name">${this._esc(o.label || 'LOC')}</span>
+              <span class="order-badge ${methodClass}">${this._esc(o.method)}</span>
+            </div>
+            <div class="order-row-right">
+              <span class="order-price">$${o.price.toFixed(2)}</span>
+              <span class="order-qty">${o.quantity}주</span>
+            </div>
+          </div>`;
+        }
+        html += '</div>';
+        html += `<p class="fbi-hint">위 가격으로 <strong>LOC 매수</strong>를 걸어두세요.</p>`;
+      } else {
+        html += `<p class="fbi-hint">시세 데이터를 불러오면 주문표가 표시됩니다.</p>`;
+      }
+
+      html += `<p class="fbi-hint">체결되면 아래 <strong>오늘 기록하기</strong> 버튼으로 기록해주세요.</p>`;
       html += `</div>`;
       el.innerHTML = html;
       return;
