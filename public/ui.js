@@ -72,10 +72,10 @@ const UI = {
       </div>
       <div class="sc3">
         <div class="sc3-label">별%</div>
-        <div class="sc3-value ${state.starPercent >= 0 ? 'text-green' : 'text-red'}">+${state.starPercent.toFixed(2)}%</div>
+        <div class="sc3-value ${state.starPercent >= 0 ? 'text-green' : 'text-red'}">${state.starPercent >= 0 ? '+' : ''}${state.starPercent.toFixed(2)}%</div>
       </div>
       <div class="sc3">
-        <div class="sc3-label">별치점</div>
+        <div class="sc3-label">별지점</div>
         <div class="sc3-value">${state.starPrice > 0 ? '$' + state.starPrice.toFixed(2) : '-'}</div>
       </div>
       <div class="sc3">
@@ -84,6 +84,28 @@ const UI = {
         ${buyAmountKrw ? `<div class="sc3-sub">(₩${buyAmountKrw})</div>` : ''}
       </div>
     `;
+
+    // 보유수익률 + 평가금액 (2-column)
+    const el2 = document.getElementById('summary-cards-2');
+    if (el2) {
+      const evalAmount = state.totalQuantity > 0 && this._priceData?.currentPrice
+        ? state.totalQuantity * this._priceData.currentPrice : 0;
+      const evalKrw = krwRate > 0 && evalAmount > 0 ? Math.round(evalAmount * krwRate).toLocaleString() : '';
+
+      el2.innerHTML = `
+        <div class="sc2">
+          <div class="sc3-label">보유수익률</div>
+          <div class="sc3-value ${profitPct !== null ? (profitPct >= 0 ? 'text-green' : 'text-red') : ''}">
+            ${profitPct !== null ? `${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(2)}%` : '-'}
+          </div>
+        </div>
+        <div class="sc2">
+          <div class="sc3-label">평가금액</div>
+          <div class="sc3-value">${evalAmount > 0 ? '$' + evalAmount.toFixed(2) : '-'}</div>
+          ${evalKrw ? `<div class="sc3-sub">(₩${evalKrw})</div>` : ''}
+        </div>
+      `;
+    }
   },
 
   // --- Exchange Rate Inline ---
@@ -216,7 +238,7 @@ const UI = {
       return;
     }
 
-    if (titleEl) titleEl.textContent = '📋 오늘의 주문';
+    if (titleEl) titleEl.textContent = '오늘의 주문';
 
     if (orders.length === 0) {
       el.innerHTML = '<p class="empty-text">표시할 주문이 없습니다.</p>';
@@ -229,19 +251,39 @@ const UI = {
     let html = '';
 
     if (buyOrders.length > 0) {
-      html += '<div class="order-group"><h4 class="order-group-title buy-title">매수 주문</h4><table class="order-table"><thead><tr><th></th><th>방식</th><th>가격</th><th>수량</th></tr></thead><tbody>';
+      html += '<div class="order-group"><div class="order-section-title"><span class="order-dot buy-dot"></span> 매수</div>';
       for (const o of buyOrders) {
-        html += `<tr><td class="order-label">${this._esc(o.label)}</td><td>${this._esc(o.method)}</td><td>$${o.price > 0 ? o.price.toFixed(2) : 'MOC'}</td><td>${o.quantity}</td></tr>`;
+        const methodClass = o.method === 'LOC' ? 'badge-loc' : (o.method === 'MOC' ? 'badge-moc' : 'badge-limit');
+        html += `<div class="order-row">
+          <div class="order-row-left">
+            <span class="order-name">${this._esc(o.label || 'LOC')}</span>
+            <span class="order-badge ${methodClass}">${this._esc(o.method)}</span>
+          </div>
+          <div class="order-row-right">
+            <span class="order-price">${o.price > 0 ? '$' + o.price.toFixed(2) : 'MOC'}</span>
+            <span class="order-qty">${o.quantity}주</span>
+          </div>
+        </div>`;
       }
-      html += '</tbody></table></div>';
+      html += '</div>';
     }
 
     if (sellOrders.length > 0) {
-      html += '<div class="order-group"><h4 class="order-group-title sell-title">매도 주문</h4><table class="order-table"><thead><tr><th></th><th>방식</th><th>가격</th><th>수량</th></tr></thead><tbody>';
+      html += '<div class="order-group"><div class="order-section-title"><span class="order-dot sell-dot"></span> 매도</div>';
       for (const o of sellOrders) {
-        html += `<tr><td class="order-label">${this._esc(o.label)}</td><td>${this._esc(o.method)}</td><td>$${o.price > 0 ? o.price.toFixed(2) : 'MOC'}</td><td>${o.quantity}</td></tr>`;
+        const methodClass = o.method === 'LOC' ? 'badge-loc' : (o.method === 'MOC' ? 'badge-moc' : 'badge-limit');
+        html += `<div class="order-row">
+          <div class="order-row-left">
+            <span class="order-name">${this._esc(o.label || 'LOC')}</span>
+            <span class="order-badge ${methodClass}">${this._esc(o.method)}</span>
+          </div>
+          <div class="order-row-right">
+            <span class="order-price sell-price">${o.price > 0 ? '$' + o.price.toFixed(2) : 'MOC'}</span>
+            <span class="order-qty">${o.quantity}주</span>
+          </div>
+        </div>`;
       }
-      html += '</tbody></table></div>';
+      html += '</div>';
     }
 
     el.innerHTML = html;
@@ -250,29 +292,38 @@ const UI = {
   // --- Transaction List ---
   renderTransactions(session) {
     const el = document.getElementById('tx-list');
+    const titleEl = document.getElementById('tx-title');
     if (!el) return;
 
-    if (session.transactions.length === 0) {
+    const count = session.transactions.length;
+    if (titleEl) titleEl.textContent = count > 0 ? `거래 히스토리 (${count}건)` : '거래 히스토리';
+
+    if (count === 0) {
       el.innerHTML = '<p class="empty-text">거래 내역이 없습니다.</p>';
       return;
     }
 
     const allTypes = [...TRANSACTION_TYPES, ...getReverseTypes(session.settings.splits)];
-    const typeMap = Object.fromEntries(allTypes.map(t => [t.type, t.label]));
+    const typeMap = Object.fromEntries(allTypes.map(t => [t.type, t]));
 
-    el.innerHTML = session.transactions.map((tx, i) => `
-      <div class="tx-row" data-tx-id="${this._esc(tx.id)}">
-        <div class="tx-info">
-          <span class="tx-date">${this._esc(tx.date)}</span>
-          <span class="tx-type-label">${this._esc(typeMap[tx.type] || tx.type)}</span>
+    el.innerHTML = session.transactions.map((tx) => {
+      const typeObj = typeMap[tx.type];
+      const typeName = typeObj?.label || tx.type;
+      const isBuy = typeObj?.group === 'buy';
+      const isSell = typeObj?.group === 'sell';
+      const badgeClass = isBuy ? 'tx-badge-buy' : (isSell ? 'tx-badge-sell' : 'tx-badge-combined');
+      const dateStr = tx.date ? tx.date.replace(/^\d{4}-/, '').replace('-', '/') : '';
+
+      return `<div class="tx-hist-row" data-tx-id="${this._esc(tx.id)}">
+        <span class="tx-hist-date">${dateStr}</span>
+        <span class="tx-hist-badge ${badgeClass}">${this._esc(typeName)}</span>
+        <span class="tx-hist-detail">$${tx.price?.toFixed(2) || '0'} × ${tx.quantity || 0}</span>
+        <div class="tx-hist-actions">
+          <button class="tx-edit" data-tx-id="${this._esc(tx.id)}" title="수정">✏️</button>
+          <button class="tx-delete" data-tx-id="${this._esc(tx.id)}" title="삭제">✕</button>
         </div>
-        <div class="tx-detail">
-          $${tx.price?.toFixed(2) || '0'} × ${tx.quantity || 0}
-          ${tx.sellPrice ? ` / 매도 $${tx.sellPrice.toFixed(2)} × ${tx.sellQuantity}` : ''}
-        </div>
-        <button class="tx-delete" data-tx-id="${this._esc(tx.id)}" title="삭제">&times;</button>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   },
 
   // --- Reverse Mode Button ---
@@ -297,30 +348,57 @@ const UI = {
   openTxModal(session) {
     const modal = document.getElementById('modal-tx');
     modal.style.display = 'flex';
-    document.getElementById('tx-date').value = new Date().toISOString().slice(0, 10);
 
+    // Reset to step 1
+    document.getElementById('tx-step-action').style.display = '';
+    document.getElementById('tx-step-detail').style.display = 'none';
+
+    const state = window._lastCalcState;
     const types = session.isReverseMode
       ? getReverseTypes(session.settings.splits)
       : TRANSACTION_TYPES;
 
-    const listEl = document.getElementById('tx-type-list');
-    listEl.innerHTML = types.map((t, i) => `
-      <button class="tx-type-btn ${i === 0 ? 'active' : ''}" data-type="${t.type}" data-group="${t.group}">
-        <span class="tx-type-name">${this._esc(t.label)}</span>
-        <span class="tx-type-desc">${this._esc(t.desc)}</span>
-      </button>
-    `).join('');
+    // Filter types based on state
+    let filteredTypes = types;
+    if (state && !session.isReverseMode) {
+      if (state.totalQuantity === 0) {
+        // No holdings → only buy types
+        filteredTypes = types.filter(t => t.group === 'buy');
+      }
+    }
 
-    this._updateTxFields(types[0]);
-    // 전일 종가를 기본 체결가로 auto-fill
+    // Determine recommended type
+    const recommended = state && state.totalQuantity > 0 ? 'full_buy' : 'full_buy';
+
+    const listEl = document.getElementById('tx-type-list');
+    listEl.innerHTML = filteredTypes.map((t) => {
+      const isRec = t.type === recommended;
+      return `<button class="tx-action-btn" data-type="${t.type}" data-group="${t.group}">
+        <div class="tx-action-left">
+          <span class="tx-action-name">${this._esc(t.label)}</span>
+          ${isRec ? '<span class="tx-rec-badge">추천</span>' : ''}
+        </div>
+        <span class="tx-action-tag">${this._esc(t.desc)}</span>
+      </button>`;
+    }).join('');
+  },
+
+  _showTxDetail(typeObj) {
+    document.getElementById('tx-step-action').style.display = 'none';
+    document.getElementById('tx-step-detail').style.display = '';
+    document.getElementById('tx-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('tx-selected-label').textContent = typeObj.label;
+
+    this._updateTxFields(typeObj);
     const prevClose = this._priceData?.previousClose;
     document.getElementById('tx-price').value = prevClose ? prevClose.toFixed(2) : '';
     document.getElementById('tx-qty').value = '';
     document.getElementById('tx-sell-price').value = prevClose ? prevClose.toFixed(2) : '';
     document.getElementById('tx-sell-qty').value = '';
-  },
 
-  _updateTxFields(typeObj) {
+    // Store selected type
+    this._selectedTxType = typeObj.type;
+  },  _updateTxFields(typeObj) {
     const sellFields = document.getElementById('tx-sell-fields');
     const priceLabel = document.querySelector('#tx-price-group label');
     const qtyLabel = document.querySelector('#tx-qty-group label');
@@ -341,8 +419,7 @@ const UI = {
   },
 
   getSelectedTxType() {
-    const active = document.querySelector('#tx-type-list .tx-type-btn.active');
-    return active?.dataset.type || null;
+    return this._selectedTxType || null;
   },
 
   // --- Market Bar ---

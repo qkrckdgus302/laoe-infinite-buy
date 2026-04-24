@@ -282,6 +282,20 @@ body {
 .text-yellow { color: var(--yellow) !important; }
 .text-orange { color: var(--orange) !important; }
 
+/* ===== Summary Grid 2-Column ===== */
+.summary-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sc2 {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
 /* ===== Exchange Inline ===== */
 .exchange-inline {
   text-align: right;
@@ -506,32 +520,77 @@ body {
 .phase-reverse { background: #2d1b4e; color: #c084fc; }
 .phase-end { background: #1a1a2e; color: var(--text-dim); }
 
-/* --- Orders --- */
-.order-group { margin-bottom: 12px; }
-.order-group-title {
-  font-size: 0.82rem;
+/* --- Orders (muhan4 style) --- */
+.order-group { margin-bottom: 16px; }
+
+.order-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
   font-weight: 700;
   margin-bottom: 8px;
-  padding-bottom: 4px;
+  color: #fff;
+}
+
+.order-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.buy-dot { background: var(--green); }
+.sell-dot { background: var(--red); }
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
 }
-.buy-title { color: var(--green); }
-.sell-title { color: var(--red); }
+.order-row:last-child { border-bottom: none; }
 
-.order-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
+.order-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.order-table th {
-  text-align: left;
-  color: var(--text-dim);
+
+.order-name {
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 4px 6px;
-  font-size: 0.72rem;
+  color: #fff;
 }
-.order-table td { padding: 5px 6px; }
-.order-label { color: var(--primary); font-weight: 600; }
+
+.order-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.badge-loc { background: #2d1b4e; color: #c084fc; }
+.badge-moc { background: #1e3a2f; color: #4ade80; }
+.badge-limit { background: #3a2e1e; color: #fbbf24; }
+
+.order-row-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-price {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--green);
+}
+.sell-price { color: var(--red); }
+
+.order-qty {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
 
 .empty-text { color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 20px; }
 
@@ -553,29 +612,56 @@ body {
   box-shadow: 0 4px 20px rgba(139, 92, 246, 0.6);
 }
 
-/* --- Transaction List --- */
-.tx-row {
+/* --- Transaction History (muhan4 style) --- */
+.tx-hist-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
 }
-.tx-row:last-child { border-bottom: none; }
 
-.tx-info { display: flex; flex-direction: column; flex: 1; }
-.tx-date { font-size: 0.72rem; color: var(--text-dim); }
-.tx-type-label { font-size: 0.85rem; font-weight: 600; }
-.tx-detail { font-size: 0.8rem; color: var(--text-dim); }
+.tx-hist-date {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  min-width: 36px;
+}
 
-.tx-delete {
+.tx-hist-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tx-badge-buy { background: #1e3a2f; color: #4ade80; }
+.tx-badge-sell { background: #3a1e1e; color: #f87171; }
+.tx-badge-combined { background: #2d1b4e; color: #c084fc; }
+
+.tx-hist-detail {
+  flex: 1;
+  font-size: 0.82rem;
+  color: var(--text);
+  text-align: right;
+}
+
+.tx-hist-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.tx-edit, .tx-delete {
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 1.2rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 2px 4px;
 }
+.tx-edit:hover { color: var(--primary); }
 .tx-delete:hover { color: var(--red); }
 
 /* --- Buttons --- */
@@ -661,26 +747,74 @@ body {
 .btn-toggle:hover { border-color: var(--primary); color: #fff; }
 .btn-toggle.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-/* --- Transaction Type List --- */
-.tx-type-list { display: flex; flex-direction: column; gap: 6px; }
+/* --- Transaction Action List (muhan4 style) --- */
+.tx-action-list { display: flex; flex-direction: column; gap: 8px; }
 
-.tx-type-btn {
+.tx-action-btn {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
+  padding: 14px 18px;
   border: 1px solid var(--border);
   background: var(--bg-input);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: all .15s;
 }
-.tx-type-btn:hover { border-color: var(--primary); }
-.tx-type-btn.active { background: var(--primary); border-color: var(--primary); }
+.tx-action-btn:hover { border-color: var(--primary); background: #1e1835; }
 
-.tx-type-name { font-size: 0.85rem; font-weight: 600; color: #fff; }
-.tx-type-desc { font-size: 0.72rem; color: var(--text-dim); }
-.tx-type-btn.active .tx-type-desc { color: rgba(255,255,255,0.7); }
+.tx-action-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-action-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.tx-rec-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+}
+
+.tx-action-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #1e3a2f;
+  color: #4ade80;
+}
+
+/* Step 2 detail */
+.tx-back-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-bottom: 12px;
+}
+.tx-back-btn:hover { color: var(--primary); }
+
+.tx-selected-label {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
 
 /* --- Modal --- */
 .modal {

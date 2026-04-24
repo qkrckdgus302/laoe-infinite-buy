@@ -44,6 +44,9 @@
 
     const orders = generateOrders(state, session.settings, reverseInfo, _lastClosePrice);
 
+    // Store state globally for modal access
+    window._lastCalcState = state;
+
     UI.renderTBar(state, session);
     UI.renderSummary(state, session);
     UI.renderPhase(state, session);
@@ -187,19 +190,23 @@
     if (session) UI.openTxModal(session);
   });
 
-  // Transaction type selection
+  // Transaction type selection → Step 2 (new 2-step modal)
   document.getElementById('tx-type-list')?.addEventListener('click', function (e) {
-    const btn = e.target.closest('.tx-type-btn');
+    const btn = e.target.closest('.tx-action-btn');
     if (!btn) return;
-    this.querySelectorAll('.tx-type-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
 
     const session = Store.getActiveSession();
     const types = session?.isReverseMode
       ? getReverseTypes(session.settings.splits)
       : TRANSACTION_TYPES;
     const typeObj = types.find(t => t.type === btn.dataset.type);
-    if (typeObj) UI._updateTxFields(typeObj);
+    if (typeObj) UI._showTxDetail(typeObj);
+  });
+
+  // Back button in step 2
+  document.getElementById('tx-back')?.addEventListener('click', function () {
+    document.getElementById('tx-step-action').style.display = '';
+    document.getElementById('tx-step-detail').style.display = 'none';
   });
 
   // Save transaction
@@ -237,11 +244,25 @@
 
   // Delete transaction
   document.getElementById('tx-list')?.addEventListener('click', function (e) {
-    const btn = e.target.closest('.tx-delete');
-    if (!btn) return;
-    const session = Store.getActiveSession();
-    if (session && confirm('이 거래를 삭제하시겠습니까?')) {
-      Store.deleteTransaction(session.id, btn.dataset.txId);
+    const deleteBtn = e.target.closest('.tx-delete');
+    if (deleteBtn) {
+      const session = Store.getActiveSession();
+      if (session && confirm('이 거래를 삭제하시겠습니까?')) {
+        Store.deleteTransaction(session.id, deleteBtn.dataset.txId);
+      }
+      return;
+    }
+    // Edit transaction (placeholder — re-opens modal with data)
+    const editBtn = e.target.closest('.tx-edit');
+    if (editBtn) {
+      const session = Store.getActiveSession();
+      if (!session) return;
+      const txId = editBtn.dataset.txId;
+      const tx = session.transactions.find(t => t.id === txId);
+      if (!tx) return;
+      // Delete old + open modal for re-entry
+      Store.deleteTransaction(session.id, txId);
+      UI.openTxModal(session);
     }
   });
 

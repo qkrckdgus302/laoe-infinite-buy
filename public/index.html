@@ -149,6 +149,9 @@
       <!-- 요약 카드 3열 -->
       <div class="summary-grid-3" id="summary-cards"></div>
 
+      <!-- 보유수익률 + 평가금액 (2열) -->
+      <div class="summary-grid-2" id="summary-cards-2"></div>
+
       <!-- USD/KRW 표시 -->
       <div class="exchange-inline" id="exchange-inline"></div>
 
@@ -195,9 +198,9 @@
         <button id="btn-reverse-toggle" class="btn-secondary" style="display:none;">리버스 모드</button>
       </div>
 
-      <!-- 거래 내역 -->
+      <!-- 거래 히스토리 -->
       <div class="card" id="tx-section">
-        <h3 class="card-title">📜 거래 내역</h3>
+        <h3 class="card-title" id="tx-title">거래 히스토리</h3>
         <div id="tx-list"></div>
       </div>
 
@@ -209,42 +212,47 @@
     </div>
   </div>
 
-  <!-- Modal: Transaction -->
+  <!-- Modal: Transaction (Step 1: 액션 선택) -->
   <div id="modal-tx" class="modal" style="display:none;">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h3>거래 기록</h3>
+        <h3>오늘 무슨 일이 있었나요?</h3>
         <button class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label>거래일</label>
-          <input type="date" id="tx-date" class="input">
+        <!-- Step 1: 액션 선택 -->
+        <div id="tx-step-action">
+          <div id="tx-type-list" class="tx-action-list"></div>
         </div>
-        <div class="form-group">
-          <label>거래 유형</label>
-          <div id="tx-type-list" class="tx-type-list"></div>
-        </div>
-        <div class="form-group" id="tx-price-group">
-          <label>매수가 ($)</label>
-          <input type="number" id="tx-price" step="0.01" min="0" class="input">
-        </div>
-        <div class="form-group" id="tx-qty-group">
-          <label>매수 수량</label>
-          <input type="number" id="tx-qty" min="1" class="input">
-        </div>
-        <div id="tx-sell-fields" style="display:none;">
+        <!-- Step 2: 상세 입력 -->
+        <div id="tx-step-detail" style="display:none;">
+          <button id="tx-back" class="tx-back-btn">← 돌아가기</button>
+          <div id="tx-selected-label" class="tx-selected-label"></div>
           <div class="form-group">
-            <label>매도가 ($)</label>
-            <input type="number" id="tx-sell-price" step="0.01" min="0" class="input">
+            <label>거래일</label>
+            <input type="date" id="tx-date" class="input">
           </div>
-          <div class="form-group">
-            <label>매도 수량</label>
-            <input type="number" id="tx-sell-qty" min="1" class="input">
+          <div class="form-group" id="tx-price-group">
+            <label>매수가 ($)</label>
+            <input type="number" id="tx-price" step="0.01" min="0" class="input">
           </div>
+          <div class="form-group" id="tx-qty-group">
+            <label>매수 수량</label>
+            <input type="number" id="tx-qty" min="1" class="input">
+          </div>
+          <div id="tx-sell-fields" style="display:none;">
+            <div class="form-group">
+              <label>매도가 ($)</label>
+              <input type="number" id="tx-sell-price" step="0.01" min="0" class="input">
+            </div>
+            <div class="form-group">
+              <label>매도 수량</label>
+              <input type="number" id="tx-sell-qty" min="1" class="input">
+            </div>
+          </div>
+          <button id="btn-save-tx" class="btn-primary full-width">저장</button>
         </div>
-        <button id="btn-save-tx" class="btn-primary full-width">저장</button>
       </div>
     </div>
   </div>
