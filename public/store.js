@@ -29,10 +29,14 @@ const Store = {
     try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
   },
 
-  _persist() {
+  _persist(immediate) {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._state));
     this._notify();
-    this._scheduleSyncToServer();
+    if (immediate) {
+      this._syncNow();
+    } else {
+      this._scheduleSyncToServer();
+    }
   },
 
   // --- Auth ---
@@ -110,7 +114,7 @@ const Store = {
     if (this._state.activeSessionId === id) {
       this._state.activeSessionId = this._state.sessions[0]?.id || null;
     }
-    this._persist();
+    this._persist(true);
   },
 
   renameSession(id, name) {
@@ -141,7 +145,7 @@ const Store = {
     const s = this._state.sessions.find(s => s.id === sessionId);
     if (!s) return;
     s.transactions = s.transactions.filter(t => t.id !== txId);
-    this._persist();
+    this._persist(true);
   },
 
   // --- Reverse Mode ---
@@ -166,7 +170,7 @@ const Store = {
     s.transactions = [];
     s.isReverseMode = false;
     s.reverseStarPrice = null;
-    this._persist();
+    this._persist(true);
   },
 
   // --- Mid Entry ---
@@ -188,6 +192,15 @@ const Store = {
   },
 
   // --- Server Sync ---
+  _syncNow() {
+    if (!this.isLoggedIn()) return;
+    clearTimeout(this._saveTimer);
+    this._saveTimer = null;
+    API.saveData(this._state).catch(() => {
+      if (typeof UI !== 'undefined') UI.toast('데이터 저장에 실패했습니다.', 'error');
+    });
+  },
+
   _scheduleSyncToServer() {
     if (!this.isLoggedIn()) return;
     clearTimeout(this._saveTimer);

@@ -160,16 +160,42 @@
   // Session tabs
   document.getElementById('tab-list')?.addEventListener('click', function (e) {
     const tab = e.target.closest('.tab');
-    if (tab) Store.setActiveSession(tab.dataset.id);
+    if (tab) {
+      cleanupPendingSetup();
+      Store.setActiveSession(tab.dataset.id);
+      const s = Store.getActiveSession();
+      if (s?.settings?.ticker) fetchPriceData(s.settings.ticker);
+    }
   });
 
   // Add session
   document.getElementById('btn-add-session')?.addEventListener('click', showSetup);
   document.getElementById('btn-create-first')?.addEventListener('click', showSetup);
 
+  let _pendingSetupSessionId = null;
+
   function showSetup() {
-    Store.createSession('', { ticker: 'TQQQ', splits: 30, totalCapital: 0 });
+    const session = Store.createSession('', { ticker: 'TQQQ', splits: 30, totalCapital: 0 });
+    _pendingSetupSessionId = session.id;
     UI.showView('view-setup');
+    // Reset setup form
+    document.getElementById('setup-name').value = '';
+    document.getElementById('setup-capital').value = '';
+    document.getElementById('setup-target').value = '';
+    document.getElementById('setup-mid-t') && (document.getElementById('setup-mid-t').value = '');
+    document.getElementById('setup-mid-avg') && (document.getElementById('setup-mid-avg').value = '');
+    document.getElementById('setup-mid-qty') && (document.getElementById('setup-mid-qty').value = '');
+  }
+
+  // Clean up abandoned setup when switching tabs
+  function cleanupPendingSetup() {
+    if (_pendingSetupSessionId) {
+      const pending = Store.getSessions().find(s => s.id === _pendingSetupSessionId);
+      if (pending && pending.settings.totalCapital === 0 && pending.transactions.length === 0) {
+        Store.deleteSession(_pendingSetupSessionId);
+      }
+      _pendingSetupSessionId = null;
+    }
   }
 
   // Start session
@@ -185,6 +211,7 @@
 
     if (capital <= 0) { UI.toast('원금을 입력해주세요.', 'error'); return; }
 
+    _pendingSetupSessionId = null; // Setup completed, no longer pending
     Store.renameSession(session.id, name);
     Store.updateSessionSettings(session.id, { ticker, splits, totalCapital: capital, targetProfit: target });
 
@@ -241,6 +268,7 @@
     const qty = Number(document.getElementById('tx-qty').value);
 
     if (!price || !qty) { UI.toast('가격과 수량을 입력하세요.', 'error'); return; }
+    if (price <= 0 || qty <= 0) { UI.toast('가격과 수량은 양수여야 합니다.', 'error'); return; }
 
     const tx = { type, date, price, quantity: qty };
 
@@ -250,6 +278,9 @@
     if (typeObj?.group === 'combined') {
       tx.sellPrice = Number(document.getElementById('tx-sell-price').value) || 0;
       tx.sellQuantity = Number(document.getElementById('tx-sell-qty').value) || 0;
+      if (tx.sellPrice <= 0 || tx.sellQuantity <= 0) {
+        UI.toast('매도가와 매도 수량을 입력하세요.', 'error'); return;
+      }
     }
 
     // For sell-only types, swap price/qty meaning
@@ -530,6 +561,8 @@
     const capital = Number(document.getElementById('settings-capital').value);
     const target = Number(document.getElementById('settings-target').value) || null;
 
+    if (!capital || capital <= 0) { UI.toast('원금을 입력해주세요.', 'error'); return; }
+
     if (name) Store.renameSession(session.id, name);
     Store.updateSessionSettings(session.id, { ticker, splits, totalCapital: capital, targetProfit: target });
     UI.closeModal('modal-settings');
@@ -596,6 +629,10 @@
 
   // Refresh market data every 5 minutes (로그인 상태만)
   setInterval(() => {
-    if (Store.isLoggedIn()) fetchMarketData();
+    if (Store.isLoggedIn()) {
+      fetchMarketData();
+      const s = Store.getActiveSession();
+      if (s?.settings?.ticker) fetchPriceData(s.settings.ticker);
+    }
   }, 300000);
 })();

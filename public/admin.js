@@ -79,7 +79,8 @@
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (_token) headers['Authorization'] = `Bearer ${_token}`;
     const resp = await fetch(url, { ...options, headers });
-    const data = await resp.json();
+    let data;
+    try { data = await resp.json(); } catch { data = { error: `HTTP ${resp.status}` }; }
     if (resp.status === 401 || resp.status === 403) {
       toast('세션이 만료되었거나 권한이 없습니다.', 'error');
       clearAuth();

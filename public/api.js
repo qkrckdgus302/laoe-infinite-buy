@@ -11,7 +11,8 @@ const API = {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (this._token) headers['Authorization'] = `Bearer ${this._token}`;
     const resp = await fetch(url, { ...options, headers });
-    const data = await resp.json();
+    let data;
+    try { data = await resp.json(); } catch { data = { error: `HTTP ${resp.status}` }; }
     if (resp.status === 401 && this._token) {
       this.clearToken();
       if (typeof Store !== 'undefined') {

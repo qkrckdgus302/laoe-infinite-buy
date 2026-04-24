@@ -113,7 +113,10 @@ const UI = {
     const el = document.getElementById('exchange-inline');
     if (!el) return;
     if (this._exchangeData?.KRW) {
-      const ts = this._exchangeData.timestamp ? ` (${new Date(this._exchangeData.timestamp).toISOString().slice(0, 10)})` : '';
+      let ts = '';
+      try {
+        if (this._exchangeData.timestamp) ts = ` (${new Date(this._exchangeData.timestamp).toISOString().slice(0, 10)})`;
+      } catch {}
       el.innerHTML = `<span>USD/KRW</span> <strong>₩${this._exchangeData.KRW.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${ts}`;
     } else {
       el.innerHTML = '';
@@ -314,10 +317,15 @@ const UI = {
       const badgeClass = isBuy ? 'tx-badge-buy' : (isSell ? 'tx-badge-sell' : 'tx-badge-combined');
       const dateStr = tx.date ? tx.date.replace(/^\d{4}-/, '').replace('-', '/') : '';
 
+      let detail = `$${tx.price?.toFixed(2) || '0'} × ${tx.quantity || 0}`;
+      if (typeObj?.group === 'combined' && tx.sellPrice) {
+        detail += ` / 매도 $${tx.sellPrice.toFixed(2)} × ${tx.sellQuantity || 0}`;
+      }
+
       return `<div class="tx-hist-row" data-tx-id="${this._esc(tx.id)}">
         <span class="tx-hist-date">${dateStr}</span>
         <span class="tx-hist-badge ${badgeClass}">${this._esc(typeName)}</span>
-        <span class="tx-hist-detail">$${tx.price?.toFixed(2) || '0'} × ${tx.quantity || 0}</span>
+        <span class="tx-hist-detail">${detail}</span>
         <div class="tx-hist-actions">
           <button class="tx-edit" data-tx-id="${this._esc(tx.id)}" title="수정">✏️</button>
           <button class="tx-delete" data-tx-id="${this._esc(tx.id)}" title="삭제">✕</button>
