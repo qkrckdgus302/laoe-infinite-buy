@@ -42,14 +42,18 @@ async function tryYahooChart(ticker, days) {
         volume: quotes.volume?.[i] || 0,
       })).filter(p => p.close !== null).slice(-days);
 
-      // previousClose = 가장 최근 거래일의 종가 (prices 배열의 마지막)
-      const lastClose = prices.length > 0 ? prices[prices.length - 1].close : null;
+      // previousClose = Yahoo meta에서 가져옴 (전일 종가)
+      // meta.chartPreviousClose 또는 meta.previousClose가 진짜 전일 종가
+      const metaPrevClose = meta.chartPreviousClose || meta.previousClose;
+      const previousClose = metaPrevClose
+        ? Math.round(metaPrevClose * 100) / 100
+        : (prices.length >= 2 ? prices[prices.length - 2].close : (prices.length === 1 ? prices[0].close : null));
 
       return {
         ticker: meta.symbol || ticker,
         currency: meta.currency || 'USD',
         currentPrice: meta.regularMarketPrice ? Math.round(meta.regularMarketPrice * 100) / 100 : null,
-        previousClose: lastClose,
+        previousClose,
         prices,
       };
     } catch { continue; }
