@@ -119,20 +119,81 @@
 
     <!-- View: Dashboard -->
     <div id="view-dashboard" class="view" style="display:none;">
-      <div class="summary-grid" id="summary-cards"></div>
-      <div class="phase-section" id="phase-badge"></div>
+      <!-- T값 바 -->
+      <div class="card t-bar-card">
+        <div class="t-bar-header">
+          <div class="t-bar-left">
+            <span class="t-label">T</span>
+            <span class="t-value-display" id="t-value-display">0.00000</span>
+          </div>
+          <div id="phase-badge"></div>
+        </div>
+        <div class="t-slider-wrap">
+          <input type="range" id="t-slider" class="t-slider" min="0" max="20" step="0.5" value="0" disabled>
+          <div class="t-slider-labels">
+            <span>0</span>
+            <span id="t-slider-mid">10 (전반전)</span>
+            <span id="t-slider-max">20</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 요약 카드 3열 -->
+      <div class="summary-grid-3" id="summary-cards"></div>
+
+      <!-- USD/KRW 표시 -->
+      <div class="exchange-inline" id="exchange-inline"></div>
+
+      <!-- 최근 종가 -->
+      <div class="card" id="recent-prices-section">
+        <div class="recent-prices-header">
+          <h3 class="card-title-inline" id="recent-prices-title">최근 종가</h3>
+          <span class="recent-avg" id="recent-avg"></span>
+        </div>
+        <div class="recent-prices-grid" id="recent-prices-grid"></div>
+      </div>
+
+      <!-- 공포 & 탐욕 지수 -->
+      <div class="card" id="fear-greed-section">
+        <div class="fg-header">
+          <h3 class="card-title-inline">공포 &amp; 탐욕 지수</h3>
+          <span class="fg-source">CNN</span>
+        </div>
+        <div class="fg-score-wrap">
+          <span class="fg-score" id="fg-score">--</span>
+          <span class="fg-rating" id="fg-rating"></span>
+        </div>
+        <div class="fg-gauge" id="fg-gauge">
+          <div class="fg-gauge-bar"></div>
+          <div class="fg-gauge-pointer" id="fg-pointer"></div>
+        </div>
+        <div class="fg-gauge-labels">
+          <span>극단적 공포</span><span>공포</span><span>중립</span><span>탐욕</span><span>극단적 탐욕</span>
+        </div>
+      </div>
+
+      <!-- 처음 매수 안내 / 오늘의 주문 -->
       <div class="card" id="orders-section">
-        <h3 class="card-title">📋 오늘의 주문</h3>
+        <h3 class="card-title" id="orders-title">📋 오늘의 주문</h3>
         <div id="orders-content"></div>
       </div>
-      <div class="action-bar">
-        <button id="btn-add-tx" class="btn-primary">거래 기록</button>
+
+      <!-- 기록 버튼 -->
+      <div class="action-bar-center">
+        <button id="btn-add-tx" class="btn-primary btn-record">+ 오늘 기록하기</button>
+      </div>
+
+      <div class="action-bar-center" style="margin-top:0">
         <button id="btn-reverse-toggle" class="btn-secondary" style="display:none;">리버스 모드</button>
       </div>
+
+      <!-- 거래 내역 -->
       <div class="card" id="tx-section">
         <h3 class="card-title">📜 거래 내역</h3>
         <div id="tx-list"></div>
       </div>
+
+      <!-- T값 추이 차트 -->
       <div class="card" id="chart-section">
         <h3 class="card-title">📈 T값 추이</h3>
         <canvas id="chart-canvas" height="200"></canvas>

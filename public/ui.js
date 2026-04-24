@@ -26,50 +26,145 @@ const UI = {
     `).join('');
   },
 
-  // --- Summary Cards ---
+  // --- T Value Bar ---
+  renderTBar(state, session) {
+    const display = document.getElementById('t-value-display');
+    const slider = document.getElementById('t-slider');
+    const midLabel = document.getElementById('t-slider-mid');
+    const maxLabel = document.getElementById('t-slider-max');
+    if (!display) return;
+
+    const splits = session.settings.splits;
+    display.textContent = state.tValue.toFixed(5);
+    slider.max = splits;
+    slider.value = state.tValue;
+    if (midLabel) midLabel.textContent = `${splits / 2} (전반전)`;
+    if (maxLabel) maxLabel.textContent = splits;
+  },
+
+  // --- Summary Cards (3 columns) ---
   renderSummary(state, session) {
     const el = document.getElementById('summary-cards');
     if (!el) return;
 
+    const krwRate = this._exchangeData?.KRW || 0;
+    const buyAmountKrw = krwRate > 0 ? Math.round(state.buyAmount * krwRate).toLocaleString() : '';
+
     const profitLoss = state.totalQuantity > 0 && this._priceData?.currentPrice
       ? ((this._priceData.currentPrice - state.avgPrice) * state.totalQuantity)
       : null;
+    const profitPct = state.totalQuantity > 0 && state.avgPrice > 0 && this._priceData?.currentPrice
+      ? ((this._priceData.currentPrice - state.avgPrice) / state.avgPrice * 100)
+      : null;
 
     el.innerHTML = `
-      <div class="summary-card">
-        <div class="sc-label">T값</div>
-        <div class="sc-value">${state.tValue}</div>
-        <div class="sc-sub">${session.settings.splits}분할</div>
+      <div class="sc3">
+        <div class="sc3-label">평단가</div>
+        <div class="sc3-value">${state.avgPrice > 0 ? '$' + state.avgPrice.toFixed(2) : '-'}</div>
       </div>
-      <div class="summary-card">
-        <div class="sc-label">평단가</div>
-        <div class="sc-value">$${state.avgPrice > 0 ? state.avgPrice.toFixed(2) : '--'}</div>
+      <div class="sc3">
+        <div class="sc3-label">보유수량</div>
+        <div class="sc3-value">${state.totalQuantity}<small>주</small></div>
       </div>
-      <div class="summary-card">
-        <div class="sc-label">별%</div>
-        <div class="sc-value ${state.starPercent >= 0 ? 'text-green' : 'text-red'}">${state.starPercent.toFixed(1)}%</div>
+      <div class="sc3">
+        <div class="sc3-label">잔금</div>
+        <div class="sc3-value">$${state.remainingCapital.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
       </div>
-      <div class="summary-card">
-        <div class="sc-label">별가격</div>
-        <div class="sc-value">$${state.starPrice > 0 ? state.starPrice.toFixed(2) : '--'}</div>
+      <div class="sc3">
+        <div class="sc3-label">별%</div>
+        <div class="sc3-value ${state.starPercent >= 0 ? 'text-green' : 'text-red'}">+${state.starPercent.toFixed(2)}%</div>
       </div>
-      <div class="summary-card">
-        <div class="sc-label">잔금</div>
-        <div class="sc-value">$${state.remainingCapital.toFixed(0)}</div>
+      <div class="sc3">
+        <div class="sc3-label">별치점</div>
+        <div class="sc3-value">${state.starPrice > 0 ? '$' + state.starPrice.toFixed(2) : '-'}</div>
       </div>
-      <div class="summary-card">
-        <div class="sc-label">보유수량</div>
-        <div class="sc-value">${state.totalQuantity}주</div>
-      </div>
-      <div class="summary-card">
-        <div class="sc-label">1회 매수금</div>
-        <div class="sc-value">$${state.buyAmount > 0 ? state.buyAmount.toFixed(0) : '--'}</div>
-      </div>
-      <div class="summary-card">
-        <div class="sc-label">평가손익</div>
-        <div class="sc-value ${profitLoss !== null ? (profitLoss >= 0 ? 'text-green' : 'text-red') : ''}">${profitLoss !== null ? (profitLoss >= 0 ? '+' : '') + '$' + profitLoss.toFixed(0) : '--'}</div>
+      <div class="sc3">
+        <div class="sc3-label">1회 매수금</div>
+        <div class="sc3-value">$${state.buyAmount > 0 ? state.buyAmount.toFixed(2) : '-'}</div>
+        ${buyAmountKrw ? `<div class="sc3-sub">(₩${buyAmountKrw})</div>` : ''}
       </div>
     `;
+  },
+
+  // --- Exchange Rate Inline ---
+  renderExchangeInline() {
+    const el = document.getElementById('exchange-inline');
+    if (!el) return;
+    if (this._exchangeData?.KRW) {
+      const ts = this._exchangeData.timestamp ? ` (${new Date(this._exchangeData.timestamp).toISOString().slice(0, 10)})` : '';
+      el.innerHTML = `<span>USD/KRW</span> <strong>₩${this._exchangeData.KRW.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>${ts}`;
+    } else {
+      el.innerHTML = '';
+    }
+  },
+
+  // --- Recent Prices ---
+  renderRecentPrices(session) {
+    const title = document.getElementById('recent-prices-title');
+    const avg = document.getElementById('recent-avg');
+    const grid = document.getElementById('recent-prices-grid');
+    if (!grid) return;
+
+    const ticker = session?.settings?.ticker || '';
+    if (title) title.textContent = `${ticker} 최근 종가`;
+
+    if (!this._priceData?.prices || this._priceData.prices.length === 0) {
+      grid.innerHTML = '<p class="empty-text">데이터 로딩중...</p>';
+      if (avg) avg.textContent = '';
+      return;
+    }
+
+    const prices = this._priceData.prices.slice(-10);
+    const last5 = prices.slice(-5);
+    const avg5 = last5.reduce((s, p) => s + p.close, 0) / last5.length;
+    if (avg) avg.innerHTML = `<span class="avg-badge">5일 평균</span> $${avg5.toFixed(2)}`;
+
+    grid.innerHTML = prices.reverse().map((p, i) => {
+      const prevClose = i < prices.length - 1 ? prices[i + 1]?.close : null;
+      const change = prevClose ? ((p.close - prevClose) / prevClose * 100) : null;
+      const changeClass = change !== null ? (change >= 0 ? 'text-green' : 'text-red') : '';
+      const changeStr = change !== null ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '';
+      const dateStr = p.date.slice(5); // MM-DD
+      const dayParts = p.date.split('-');
+      const d = new Date(parseInt(dayParts[0]), parseInt(dayParts[1]) - 1, parseInt(dayParts[2]));
+      const dayLabel = `${d.getMonth() + 1}/${d.getDate()}`;
+
+      return `
+        <div class="rp-item">
+          <div class="rp-date">${dayLabel}</div>
+          <div class="rp-price">$${p.close.toFixed(2)}</div>
+          <div class="rp-change ${changeClass}">${changeStr}</div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  // --- Fear & Greed Gauge ---
+  renderFearGreed() {
+    const scoreEl = document.getElementById('fg-score');
+    const ratingEl = document.getElementById('fg-rating');
+    const pointer = document.getElementById('fg-pointer');
+    const section = document.getElementById('fear-greed-section');
+    if (!scoreEl) return;
+
+    if (this._fearGreedData?.score != null) {
+      const score = this._fearGreedData.score;
+      scoreEl.textContent = score;
+      ratingEl.textContent = this._fearGreedData.ratingKo || '';
+
+      // Color based on score
+      if (score <= 25) { scoreEl.className = 'fg-score text-red'; ratingEl.className = 'fg-rating text-red'; }
+      else if (score <= 45) { scoreEl.className = 'fg-score text-yellow'; ratingEl.className = 'fg-rating text-yellow'; }
+      else if (score <= 55) { scoreEl.className = 'fg-score'; ratingEl.className = 'fg-rating'; }
+      else if (score <= 75) { scoreEl.className = 'fg-score text-green'; ratingEl.className = 'fg-rating text-green'; }
+      else { scoreEl.className = 'fg-score text-green'; ratingEl.className = 'fg-rating text-green'; }
+
+      // Move pointer
+      if (pointer) pointer.style.left = `${score}%`;
+      if (section) section.style.display = '';
+    } else {
+      if (section) section.style.display = 'none';
+    }
   },
 
   // --- Phase Badge ---
@@ -91,9 +186,37 @@ const UI = {
   },
 
   // --- Orders ---
-  renderOrders(orders) {
+  renderOrders(orders, state, session) {
     const el = document.getElementById('orders-content');
+    const titleEl = document.getElementById('orders-title');
     if (!el) return;
+
+    // 처음매수 안내
+    if (state && state.phase === '처음매수') {
+      const buyAmount = state.buyAmount;
+      const prevClose = this._priceData?.previousClose;
+      if (titleEl) titleEl.textContent = '처음 매수 안내';
+
+      let html = `<div class="first-buy-info">`;
+      html += `<div class="fbi-row"><span>1회 매수금</span><strong class="fbi-amount">$${buyAmount.toFixed(2)}</strong></div>`;
+
+      if (prevClose) {
+        const loc10 = Math.round(prevClose * 1.10 * 100) / 100;
+        const loc15 = Math.round(prevClose * 1.15 * 100) / 100;
+        html += `<div class="fbi-close">전일 종가 <strong>$${prevClose.toFixed(2)}</strong> 기준</div>`;
+        html += `<div class="fbi-locs">`;
+        html += `<div class="fbi-loc"><span class="fbi-loc-label">+10% LOC</span><span class="fbi-loc-price">$${loc10.toFixed(2)}</span></div>`;
+        html += `<div class="fbi-loc"><span class="fbi-loc-label">+15% LOC</span><span class="fbi-loc-price">$${loc15.toFixed(2)}</span></div>`;
+        html += `</div>`;
+        html += `<p class="fbi-hint">전일 종가의 <strong>10~15% 위</strong> 가격으로 LOC 매수를 설정하세요.</p>`;
+        html += `<p class="fbi-hint">체결되면 아래 <strong>오늘 기록하기</strong> 버튼으로 기록해주세요.</p>`;
+      }
+      html += `</div>`;
+      el.innerHTML = html;
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = '📋 오늘의 주문';
 
     if (orders.length === 0) {
       el.innerHTML = '<p class="empty-text">표시할 주문이 없습니다.</p>';
@@ -316,7 +439,7 @@ const UI = {
       }
     }
 
-    // X labels (show first, mid, last)
+    // X labels
     ctx.fillStyle = '#666';
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'center';

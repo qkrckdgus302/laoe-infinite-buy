@@ -12,6 +12,7 @@
   --green: #22c55e;
   --red: #ef4444;
   --yellow: #eab308;
+  --orange: #f97316;
   --radius: 12px;
   --radius-sm: 8px;
 }
@@ -159,36 +160,342 @@ body {
   color: #fff;
 }
 
-/* --- Summary Grid --- */
-.summary-grid {
+.card-title-inline {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ===== T Value Bar ===== */
+.t-bar-card {
+  padding: 16px 20px 12px;
+}
+
+.t-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.t-bar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.t-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.t-value-display {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+.t-slider-wrap {
+  margin-top: 4px;
+}
+
+.t-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 50%, var(--red) 100%);
+  border-radius: 3px;
+  outline: none;
+  cursor: default;
+}
+
+.t-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--primary);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.t-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--primary);
+}
+
+.t-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ===== Summary Grid 3-Column ===== */
+.summary-grid-3 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sc3 {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.sc3-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.sc3-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.sc3-value small {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.sc3-sub {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.text-green { color: var(--green) !important; }
+.text-red { color: var(--red) !important; }
+.text-yellow { color: var(--yellow) !important; }
+.text-orange { color: var(--orange) !important; }
+
+/* ===== Exchange Inline ===== */
+.exchange-inline {
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  padding: 2px 4px 8px;
+}
+
+.exchange-inline strong {
+  color: var(--text);
+}
+
+/* ===== Recent Prices ===== */
+.recent-prices-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.recent-avg {
+  font-size: 0.78rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.avg-badge {
+  font-size: 0.65rem;
+  background: var(--primary);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.recent-prices-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.rp-item {
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.rp-date {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.rp-price {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.rp-change {
+  font-size: 0.62rem;
+  margin-top: 2px;
+}
+
+/* ===== Fear & Greed ===== */
+.fg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.fg-source {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.fg-score-wrap {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
   margin-bottom: 12px;
 }
 
-.summary-card {
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 14px;
-  text-align: center;
+.fg-score {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
 }
 
-.sc-label { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 4px; }
-.sc-value { font-size: 1.15rem; font-weight: 800; color: #fff; }
-.sc-sub { font-size: 0.68rem; color: var(--text-dim); margin-top: 2px; }
+.fg-rating {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
 
-.text-green { color: var(--green); }
-.text-red { color: var(--red); }
+.fg-gauge {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  overflow: visible;
+  margin-bottom: 4px;
+}
 
-/* --- Phase Badge --- */
-.phase-section { text-align: center; margin-bottom: 12px; }
+.fg-gauge-bar {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 25%, #eab308 50%, #84cc16 75%, #22c55e 100%);
+}
 
+.fg-gauge-pointer {
+  position: absolute;
+  top: -3px;
+  width: 4px;
+  height: 18px;
+  background: #fff;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  transition: left 0.3s ease;
+  left: 50%;
+}
+
+.fg-gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.58rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ===== First Buy Info ===== */
+.first-buy-info {
+  padding: 4px 0;
+}
+
+.fbi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.fbi-row span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.fbi-amount {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--green);
+}
+
+.fbi-close {
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.fbi-close strong {
+  color: #fff;
+}
+
+.fbi-locs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fbi-loc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fbi-loc-label {
+  font-size: 0.72rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.fbi-loc-price {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.fbi-hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.fbi-hint strong {
+  color: var(--primary);
+}
+
+/* ===== Phase Badge ===== */
 .phase-tag {
   display: inline-block;
-  padding: 6px 20px;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 4px 14px;
+  border-radius: 14px;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -228,6 +535,24 @@ body {
 
 .empty-text { color: var(--text-dim); font-size: 0.85rem; text-align: center; padding: 20px; }
 
+/* --- Action Bar Center --- */
+.action-bar-center {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.btn-record {
+  padding: 14px 40px;
+  font-size: 1rem;
+  border-radius: 30px;
+  background: linear-gradient(135deg, var(--primary), #a78bfa);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.btn-record:hover {
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.6);
+}
+
 /* --- Transaction List --- */
 .tx-row {
   display: flex;
@@ -252,13 +577,6 @@ body {
   padding: 4px 8px;
 }
 .tx-delete:hover { color: var(--red); }
-
-/* --- Action Bar --- */
-.action-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
 
 /* --- Buttons --- */
 .btn-primary {
@@ -434,10 +752,12 @@ body {
 /* --- Responsive --- */
 @media (max-width: 400px) {
   #app { padding: 0 10px 20px; }
-  .summary-grid { gap: 6px; }
-  .summary-card { padding: 10px; }
-  .sc-value { font-size: 1rem; }
+  .summary-grid-3 { gap: 4px; }
+  .sc3 { padding: 8px 4px; }
+  .sc3-value { font-size: 0.88rem; }
   .card { padding: 14px; }
+  .recent-prices-grid { grid-template-columns: repeat(4, 1fr); }
+  .t-value-display { font-size: 1.4rem; }
 }
 
 @media (min-width: 481px) {

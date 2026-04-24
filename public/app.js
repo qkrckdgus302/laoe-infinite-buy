@@ -42,9 +42,13 @@
 
     const orders = generateOrders(state, session.settings, reverseInfo, _lastClosePrice);
 
+    UI.renderTBar(state, session);
     UI.renderSummary(state, session);
     UI.renderPhase(state, session);
-    UI.renderOrders(orders);
+    UI.renderExchangeInline();
+    UI.renderRecentPrices(session);
+    UI.renderFearGreed();
+    UI.renderOrders(orders, state, session);
     UI.renderTransactions(session);
     UI.updateReverseButton(state, session);
     UI.renderMarketBar(session);
@@ -58,7 +62,7 @@
 
   // --- Event Delegation ---
 
-  // Toggle buttons
+  // Toggle buttons (with ticker change detection)
   document.addEventListener('click', function (e) {
     const toggle = e.target.closest('.btn-toggle');
     if (toggle) {
@@ -70,6 +74,11 @@
       if (group.id === 'setup-entry') {
         document.getElementById('mid-entry-fields').style.display =
           toggle.dataset.value === 'mid' ? '' : 'none';
+      }
+
+      // Ticker change in setup → fetch new price
+      if (group.id === 'setup-ticker') {
+        fetchPriceData(toggle.dataset.value);
       }
     }
   });
