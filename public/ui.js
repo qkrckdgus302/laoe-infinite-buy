@@ -609,6 +609,15 @@ const UI = {
     // Clear all input fields
     document.querySelectorAll('#modal-auth input').forEach(i => i.value = '');
     document.querySelectorAll('#modal-auth select').forEach(s => s.selectedIndex = 0);
+    // Chrome 비밀번호 자동완성 (PasswordCredential API)
+    if (!loggedIn && window.PasswordCredential) {
+      navigator.credentials.get({ password: true, mediation: 'optional' }).then(cred => {
+        if (cred && cred.type === 'password') {
+          document.getElementById('auth-id').value = cred.id;
+          document.getElementById('auth-pw').value = cred.password;
+        }
+      }).catch(() => {});
+    }
   },
 
   showAuthError(elementId, msg) {
