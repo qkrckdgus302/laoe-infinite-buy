@@ -23,7 +23,8 @@ export async function onRequestPost({ request, env }) {
       return jsonResponse({ error: '아이디 또는 비밀번호가 올바르지 않습니다.' }, 401);
     }
 
-    const secret = env.JWT_SECRET || 'dev-secret-change-me';
+    const secret = env.JWT_SECRET;
+    if (!secret) return jsonResponse({ error: '서버 설정 오류입니다.' }, 500);
     const token = await createToken({ userId: user.id, username }, secret);
 
     return jsonResponse({ token, username });

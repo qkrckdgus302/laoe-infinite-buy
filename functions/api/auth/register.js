@@ -44,7 +44,8 @@ export async function onRequestPost({ request, env }) {
       'INSERT INTO user_data (user_id, data_json) VALUES (?, ?)'
     ).bind(userId, '{}').run();
 
-    const secret = env.JWT_SECRET || 'dev-secret-change-me';
+    const secret = env.JWT_SECRET;
+    if (!secret) return jsonResponse({ error: '서버 설정 오류입니다.' }, 500);
     const token = await createToken({ userId, username }, secret);
 
     return jsonResponse({ token, username });

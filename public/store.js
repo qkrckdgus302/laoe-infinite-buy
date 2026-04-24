@@ -52,6 +52,8 @@ const Store = {
 
   // 로그아웃 시 세션 데이터 전부 초기화
   clearAllData() {
+    clearTimeout(this._saveTimer);
+    this._saveTimer = null;
     this._state = this._defaultState();
     localStorage.removeItem(this.STORAGE_KEY);
     this._notify();

@@ -287,7 +287,7 @@
       if (!tx) return;
       // Store the pending edit tx id for deletion on save
       window._pendingEditTxId = txId;
-      UI.openTxModal(session);
+      UI.openTxModal(session, tx);
     }
   });
 
@@ -333,6 +333,10 @@
     try {
       const res = await API.login(id, pw);
       Store.setAuth(res.token, res.username);
+      // Chrome 비밀번호 저장 트리거
+      if (window.PasswordCredential) {
+        try { await navigator.credentials.store(new PasswordCredential({ id, password: pw })); } catch {}
+      }
       try { await Store.syncFromServer(); } catch { /* 동기화 실패해도 로그인은 유지 */ }
       UI.closeModal('modal-auth');
       UI.toast('로그인되었습니다.');
@@ -365,6 +369,10 @@
     try {
       const res = await API.register(id, pw, sq, sa);
       Store.setAuth(res.token, res.username);
+      // Chrome 비밀번호 저장 트리거
+      if (window.PasswordCredential) {
+        try { await navigator.credentials.store(new PasswordCredential({ id, password: pw })); } catch {}
+      }
       UI.closeModal('modal-auth');
       UI.toast('회원가입이 완료되었습니다.');
       render();
@@ -500,7 +508,10 @@
 
   // ESC key to close modals
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') UI.closeAllModals();
+    if (e.key === 'Escape') {
+      window._pendingEditTxId = null;
+      UI.closeAllModals();
+    }
   });
 
   // Settings modal

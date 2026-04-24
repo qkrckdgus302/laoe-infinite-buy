@@ -345,7 +345,7 @@ const UI = {
   },
 
   // --- Transaction Modal ---
-  openTxModal(session) {
+  openTxModal(session, editTx) {
     const modal = document.getElementById('modal-tx');
     modal.style.display = 'flex';
 
@@ -358,6 +358,22 @@ const UI = {
       ? getReverseTypes(session.settings.splits)
       : TRANSACTION_TYPES;
 
+    // If editing, skip to step 2 with pre-filled values
+    if (editTx) {
+      const allTypes = [...TRANSACTION_TYPES, ...getReverseTypes(session.settings.splits)];
+      const typeObj = allTypes.find(t => t.type === editTx.type);
+      if (typeObj) {
+        this._showTxDetail(typeObj);
+        // Pre-fill original values
+        if (editTx.date) document.getElementById('tx-date').value = editTx.date;
+        if (editTx.price) document.getElementById('tx-price').value = editTx.price;
+        if (editTx.quantity) document.getElementById('tx-qty').value = editTx.quantity;
+        if (editTx.sellPrice) document.getElementById('tx-sell-price').value = editTx.sellPrice;
+        if (editTx.sellQuantity) document.getElementById('tx-sell-qty').value = editTx.sellQuantity;
+        return;
+      }
+    }
+
     // Filter types based on state
     let filteredTypes = types;
     if (state && !session.isReverseMode) {
@@ -368,7 +384,7 @@ const UI = {
     }
 
     // Determine recommended type
-    const recommended = state && state.totalQuantity > 0 ? 'full_buy' : 'full_buy';
+    const recommended = state && state.totalQuantity > 0 ? null : 'full_buy';
 
     const listEl = document.getElementById('tx-type-list');
     listEl.innerHTML = filteredTypes.map((t) => {
