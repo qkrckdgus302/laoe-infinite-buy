@@ -1,3 +1,8 @@
 name = "laoe-infinite-buy"
 compatibility_date = "2026-04-24"
 pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "laoe-infinite-buy-db"
+database_id = "79069010-e983-40c1-8ab9-f8106a52192d"
