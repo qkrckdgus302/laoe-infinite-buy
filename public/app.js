@@ -76,9 +76,18 @@
           toggle.dataset.value === 'mid' ? '' : 'none';
       }
 
-      // Ticker change in setup → fetch new price
-      if (group.id === 'setup-ticker') {
-        fetchPriceData(toggle.dataset.value);
+      // Ticker change in setup → fetch new price + update market bar immediately
+      if (group.id === 'setup-ticker' || group.id === 'settings-ticker') {
+        const newTicker = toggle.dataset.value;
+        fetchPriceData(newTicker);
+        // Immediately update the market bar label (before price data arrives)
+        const priceEl = document.getElementById('market-price');
+        if (priceEl) {
+          const label = priceEl.querySelector('.market-label');
+          if (label) label.textContent = newTicker;
+          const value = priceEl.querySelector('.market-value');
+          if (value) value.textContent = '...';
+        }
       }
     }
   });
