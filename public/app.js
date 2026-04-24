@@ -20,11 +20,13 @@
         Store.setActiveSession(sessions[0].id);
         return;
       }
+      UI.renderMarketBar(null);
       return;
     }
 
     if (!session.settings.totalCapital) {
       UI.showView('view-setup');
+      UI.renderMarketBar(session);
       return;
     }
 
@@ -303,10 +305,7 @@
       if (fg) UI.setFearGreedData(fg);
       if (ex) UI.setExchangeData(ex);
 
-      const session = Store.getActiveSession();
-      if (session) {
-        UI.renderMarketBar(session);
-      }
+      UI.renderMarketBar(Store.getActiveSession());
     } catch { /* silent */ }
   }
 
