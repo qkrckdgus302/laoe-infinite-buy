@@ -322,12 +322,14 @@
     });
   });
 
-  // Login
-  document.getElementById('btn-login')?.addEventListener('click', async function () {
+  // Login (form submit for Chrome password save)
+  document.getElementById('auth-tab-login')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-login');
     const id = document.getElementById('auth-id').value.trim();
     const pw = document.getElementById('auth-pw').value;
     if (!id || !pw) { UI.showAuthError('auth-error', '아이디와 비밀번호를 입력하세요.'); return; }
-    this.disabled = true; this.textContent = '로그인 중...';
+    btn.disabled = true; btn.textContent = '로그인 중...';
     try {
       const res = await API.login(id, pw);
       Store.setAuth(res.token, res.username);
@@ -342,17 +344,14 @@
     } catch (e) {
       UI.showAuthError('auth-error', e.message);
     } finally {
-      this.disabled = false; this.textContent = '로그인';
+      btn.disabled = false; btn.textContent = '로그인';
     }
   });
 
-  // Enter key for login
-  document.getElementById('auth-pw')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') document.getElementById('btn-login').click();
-  });
-
-  // Register
-  document.getElementById('btn-register')?.addEventListener('click', async function () {
+  // Register (form submit for Chrome password save)
+  document.getElementById('auth-tab-register')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-register');
     const id = document.getElementById('reg-id').value.trim();
     const pw = document.getElementById('reg-pw').value;
     const pw2 = document.getElementById('reg-pw2').value;
@@ -362,7 +361,7 @@
     if (pw !== pw2) { UI.showAuthError('reg-error', '비밀번호가 일치하지 않습니다.'); return; }
     if (!sq) { UI.showAuthError('reg-error', '보안질문을 선택하세요.'); return; }
     if (!sa) { UI.showAuthError('reg-error', '보안질문 답변을 입력하세요.'); return; }
-    this.disabled = true; this.textContent = '가입 중...';
+    btn.disabled = true; btn.textContent = '가입 중...';
     try {
       const res = await API.register(id, pw, sq, sa);
       Store.setAuth(res.token, res.username);
@@ -372,7 +371,7 @@
     } catch (e) {
       UI.showAuthError('reg-error', e.message);
     } finally {
-      this.disabled = false; this.textContent = '회원가입';
+      btn.disabled = false; btn.textContent = '회원가입';
     }
   });
 

@@ -340,7 +340,7 @@
           </div>
 
           <!-- Login Tab -->
-          <div id="auth-tab-login" class="auth-tab-content">
+          <form id="auth-tab-login" class="auth-tab-content" action="#" method="post">
             <div class="form-group">
               <label>아이디</label>
               <input type="text" id="auth-id" class="input" autocomplete="username" placeholder="아이디를 입력하세요">
@@ -350,11 +350,11 @@
               <input type="password" id="auth-pw" class="input" autocomplete="current-password" placeholder="비밀번호를 입력하세요">
             </div>
             <div id="auth-error" class="error-msg" style="display:none;"></div>
-            <button id="btn-login" class="btn-primary full-width">로그인</button>
-          </div>
+            <button id="btn-login" class="btn-primary full-width" type="submit">로그인</button>
+          </form>
 
           <!-- Register Tab -->
-          <div id="auth-tab-register" class="auth-tab-content" style="display:none;">
+          <form id="auth-tab-register" class="auth-tab-content" style="display:none;" action="#" method="post">
             <div class="form-group">
               <label>아이디 <small class="hint-inline">영문/숫자/밑줄, 3~20자</small></label>
               <input type="text" id="reg-id" class="input" autocomplete="username" placeholder="아이디">
@@ -384,8 +384,8 @@
               <input type="text" id="reg-sa" class="input" placeholder="답변을 입력하세요">
             </div>
             <div id="reg-error" class="error-msg" style="display:none;"></div>
-            <button id="btn-register" class="btn-primary full-width">회원가입</button>
-          </div>
+            <button id="btn-register" class="btn-primary full-width" type="submit">회원가입</button>
+          </form>
 
           <!-- Reset Password Tab -->
           <div id="auth-tab-reset" class="auth-tab-content" style="display:none;">
