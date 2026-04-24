@@ -10,13 +10,20 @@
   let _detailUserId = null;
 
   // --- Init ---
-  function init() {
+  async function init() {
     const auth = loadAuth();
     if (auth?.token) {
       _token = auth.token;
       _username = auth.username;
       API.setToken(_token);
-      showDashboard();
+      // 관리자 권한 확인 후 대시보드 표시
+      try {
+        await adminFetch('/api/admin/stats');
+        showDashboard();
+      } catch {
+        clearAuth();
+        showLogin();
+      }
     } else {
       showLogin();
     }
@@ -73,11 +80,11 @@
     if (_token) headers['Authorization'] = `Bearer ${_token}`;
     const resp = await fetch(url, { ...options, headers });
     const data = await resp.json();
-    if (resp.status === 403) {
-      toast('관리자 권한이 없습니다.', 'error');
+    if (resp.status === 401 || resp.status === 403) {
+      toast('세션이 만료되었거나 권한이 없습니다.', 'error');
       clearAuth();
       showLogin();
-      throw new Error('Forbidden');
+      throw new Error('Unauthorized');
     }
     if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
     return data;
@@ -87,7 +94,9 @@
     try {
       const stats = await adminFetch('/api/admin/stats');
       renderStats(stats);
-    } catch { /* silent */ }
+    } catch (e) {
+      if (e.message !== 'Unauthorized') toast('통계를 불러오지 못했습니다.', 'error');
+    }
   }
 
   async function loadUsers() {
@@ -96,7 +105,9 @@
       if (_searchQuery) params.set('search', _searchQuery);
       const data = await adminFetch(`/api/admin/users?${params}`);
       renderUsers(data);
-    } catch { /* silent */ }
+    } catch (e) {
+      if (e.message !== 'Unauthorized') toast('사용자 목록을 불러오지 못했습니다.', 'error');
+    }
   }
 
   async function loadUserDetail(userId) {
@@ -145,7 +156,7 @@
     tbody.innerHTML = data.users.map(u => {
       const roleClass = u.role === 'admin' ? 'role-admin' : 'role-user';
       const roleLabel = u.role === 'admin' ? '관리자' : '사용자';
-      const sizeKB = Math.round((u.data_size || 2) / 1024);
+      const sizeKB = Math.round((u.data_size || 0) / 1024);
       return `<tr>
         <td>${u.id}</td>
         <td>${esc(u.username)}</td>
@@ -174,7 +185,7 @@
 
   function renderDetail(user) {
     const el = document.getElementById('user-detail');
-    const sizeKB = Math.round((user.dataSize || 2) / 1024);
+    const sizeKB = Math.round((user.dataSize || 0) / 1024);
     el.innerHTML = `
       <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">${user.id}</span></div>
       <div class="detail-row"><span class="detail-label">아이디</span><span class="detail-value">${esc(user.username)}</span></div>
@@ -198,6 +209,7 @@
   function bindEvents() {
     // Login
     document.getElementById('btn-login').addEventListener('click', async () => {
+      document.getElementById('login-error').style.display = 'none';
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-pw').value;
       if (!id || !pw) { showError('아이디와 비밀번호를 입력하세요.'); return; }
@@ -208,7 +220,7 @@
         await adminFetch('/api/admin/stats');
         showDashboard();
       } catch (e) {
-        showError(e.message === 'Forbidden' ? '관리자 계정이 아닙니다.' : e.message);
+        showError(e.message === 'Unauthorized' ? '관리자 계정이 아닙니다.' : e.message);
       }
     });
 
@@ -266,6 +278,7 @@
       if (!_detailUserId) return;
       const pw = document.getElementById('new-pw').value;
       if (!pw || pw.length < 6) { toast('비밀번호는 6자 이상 입력하세요.', 'error'); return; }
+      if (!confirm('비밀번호를 변경하시겠습니까?')) return;
       try {
         await adminFetch(`/api/admin/user/${_detailUserId}`, {
           method: 'PUT',
@@ -281,6 +294,7 @@
       if (!_detailUserId) return;
       const active = document.querySelector('#role-toggle .btn-toggle.active');
       if (!active) return;
+      if (!confirm('권한을 변경하시겠습니까?')) return;
       try {
         await adminFetch(`/api/admin/user/${_detailUserId}`, {
           method: 'PUT',
@@ -329,7 +343,7 @@
 
   function formatDate(dateStr) {
     if (!dateStr) return '-';
-    const d = new Date(dateStr);
+    const d = new Date(dateStr.includes('T') || dateStr.includes('Z') ? dateStr : dateStr + 'Z');
     if (isNaN(d)) return dateStr;
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }

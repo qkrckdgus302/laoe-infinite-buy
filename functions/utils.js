@@ -47,7 +47,7 @@ async function verifyToken(token, secret) {
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 }
@@ -63,7 +63,8 @@ async function getUser(request, env) {
   const auth = request.headers.get('Authorization');
   if (!auth || !auth.startsWith('Bearer ')) return null;
   const token = auth.slice(7);
-  const secret = env.JWT_SECRET || 'dev-secret-change-me';
+  const secret = env.JWT_SECRET;
+  if (!secret) return null;
   return verifyToken(token, secret);
 }
 
