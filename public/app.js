@@ -26,7 +26,9 @@
 
     if (!session.settings.totalCapital) {
       UI.showView('view-setup');
-      UI.renderMarketBar(session);
+      // Use the currently selected ticker from toggle (not saved session)
+      const setupTicker = UI.getToggleValue('setup-ticker') || session.settings.ticker;
+      UI.renderMarketBar(session, setupTicker);
       return;
     }
 
@@ -76,11 +78,11 @@
           toggle.dataset.value === 'mid' ? '' : 'none';
       }
 
-      // Ticker change in setup → fetch new price + update market bar immediately
+      // Ticker change in setup/settings → fetch new price + update UI immediately
       if (group.id === 'setup-ticker' || group.id === 'settings-ticker') {
         const newTicker = toggle.dataset.value;
         fetchPriceData(newTicker);
-        // Immediately update the market bar label (before price data arrives)
+        // Immediately update the market bar label
         const priceEl = document.getElementById('market-price');
         if (priceEl) {
           const label = priceEl.querySelector('.market-label');
@@ -88,6 +90,14 @@
           const value = priceEl.querySelector('.market-value');
           if (value) value.textContent = '...';
         }
+      }
+
+      // Update session name placeholder when ticker or splits change
+      if (group.id === 'setup-ticker' || group.id === 'setup-splits') {
+        const t = UI.getToggleValue('setup-ticker') || 'TQQQ';
+        const s = UI.getToggleValue('setup-splits') || '30';
+        const nameInput = document.getElementById('setup-name');
+        if (nameInput) nameInput.placeholder = `예: ${t} ${s}분할`;
       }
     }
   });

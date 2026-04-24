@@ -346,8 +346,8 @@ const UI = {
   },
 
   // --- Market Bar ---
-  renderMarketBar(session) {
-    const ticker = session?.settings?.ticker || '--';
+  renderMarketBar(session, tickerOverride) {
+    const ticker = tickerOverride || session?.settings?.ticker || '--';
     const priceEl = document.getElementById('market-price');
     if (priceEl) {
       const label = priceEl.querySelector('.market-label');
