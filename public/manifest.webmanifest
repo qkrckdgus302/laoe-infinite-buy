@@ -1,0 +1,21 @@
+{
+  "name": "무한매수법 4.0",
+  "short_name": "무한매수법",
+  "description": "라오어 무한매수법 V4.0 투자 계산기",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0d1a",
+  "theme_color": "#1a1230",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

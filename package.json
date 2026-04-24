@@ -1,0 +1,11 @@
+{
+  "name": "laoe-infinite-buy",
+  "private": true,
+  "scripts": {
+    "dev": "npx wrangler pages dev public --d1=DB",
+    "deploy": "npx wrangler pages deploy public"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
