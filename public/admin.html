@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1230">
+  <title>관리자 - 무한매수법</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Admin-specific styles */
+    .admin-container { max-width: 720px; margin: 0 auto; padding: 0 16px 24px; }
+
+    .admin-login { max-width: 400px; margin: 80px auto; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-value { font-size: 1.8rem; font-weight: 900; color: #fff; }
+    .stat-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .search-bar .input { flex: 1; }
+
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .user-table th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      color: var(--text-dim);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .user-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .user-table tr:hover td { background: rgba(139, 92, 246, 0.05); }
+
+    .role-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .role-admin { background: #2d1b4e; color: #c084fc; }
+    .role-user { background: #1e3a2f; color: #4ade80; }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn-sm {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-sm:hover { border-color: var(--primary); color: #fff; }
+    .btn-sm.danger { border-color: var(--red); color: var(--red); }
+    .btn-sm.danger:hover { background: var(--red); color: #fff; }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .pagination button {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+    .pagination button:hover:not(:disabled) { border-color: var(--primary); color: #fff; }
+    .pagination button:disabled { opacity: 0.3; cursor: default; }
+    .pagination .page-info { font-size: 0.82rem; color: var(--text-dim); }
+
+    .detail-section { margin-bottom: 16px; }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-label { color: var(--text-dim); font-size: 0.85rem; }
+    .detail-value { color: #fff; font-weight: 600; font-size: 0.85rem; }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 8px 0;
+      margin-bottom: 12px;
+    }
+    .back-btn:hover { text-decoration: underline; }
+
+    .recent-list { list-style: none; }
+    .recent-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    .recent-list .name { color: #fff; font-weight: 600; }
+    .recent-list .date { color: var(--text-dim); font-size: 0.78rem; }
+
+    .admin-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .admin-toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="admin-container" id="app">
+    <!-- Login -->
+    <div id="admin-login" class="admin-login" style="display:none;">
+      <div class="card">
+        <h2 class="card-title" style="text-align:center;">🔒 관리자 로그인</h2>
+        <div class="form-group">
+          <label>아이디</label>
+          <input type="text" id="login-id" class="input" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>비밀번호</label>
+          <input type="password" id="login-pw" class="input" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="error-msg" style="display:none;"></div>
+        <button id="btn-login" class="btn-primary full-width">로그인</button>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="admin-dashboard" style="display:none;">
+      <header id="topbar" style="margin-bottom: 8px;">
+        <div class="topbar-left">
+          <h1 class="logo">관리자 <span class="version-badge">ADMIN</span></h1>
+        </div>
+        <div class="topbar-right">
+          <span id="admin-name" style="color:var(--text-dim);font-size:0.82rem;align-self:center;"></span>
+          <button id="btn-logout" class="icon-btn" title="로그아웃">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats -->
+      <div id="stats-section" class="stats-grid"></div>
+
+      <!-- Views -->
+      <div id="view-list">
+        <div class="card">
+          <h3 class="card-title">사용자 관리</h3>
+          <div class="search-bar">
+            <input type="text" id="search-input" class="input" placeholder="아이디 검색...">
+            <button id="btn-search" class="btn-primary" style="padding:10px 20px;">검색</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>아이디</th>
+                  <th>권한</th>
+                  <th>가입일</th>
+                  <th>데이터</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="user-tbody"></tbody>
+            </table>
+          </div>
+          <div id="pagination" class="pagination"></div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="card">
+          <h3 class="card-title">최근 가입</h3>
+          <ul id="recent-users" class="recent-list"></ul>
+        </div>
+      </div>
+
+      <!-- User Detail -->
+      <div id="view-detail" style="display:none;">
+        <button class="back-btn" id="btn-back">← 목록으로</button>
+        <div class="card">
+          <h3 class="card-title">사용자 상세 정보</h3>
+          <div id="user-detail" class="detail-section"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">관리 작업</h3>
+          <div class="form-group">
+            <label>비밀번호 초기화</label>
+            <div style="display:flex;gap:8px;">
+              <input type="password" id="new-pw" class="input" placeholder="새 비밀번호 (6자 이상)">
+              <button id="btn-reset-pw" class="btn-primary" style="white-space:nowrap;padding:10px 16px;">변경</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>권한 변경</label>
+            <div class="btn-group" id="role-toggle">
+              <button class="btn-toggle" data-value="user">일반 사용자</button>
+              <button class="btn-toggle" data-value="admin">관리자</button>
+            </div>
+          </div>
+          <button id="btn-save-role" class="btn-primary full-width" style="margin-top:8px;">권한 저장</button>
+          <button id="btn-delete-user" class="btn-danger full-width" style="margin-top:8px;">사용자 삭제</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="admin-toast"></div>
+
+  <script src="api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -164,7 +164,7 @@
     const target = Number(document.getElementById('setup-target').value) || null;
     const name = document.getElementById('setup-name').value || `${ticker} ${splits}분할`;
 
-    if (capital <= 0) { alert('원금을 입력해주세요.'); return; }
+    if (capital <= 0) { UI.toast('원금을 입력해주세요.', 'error'); return; }
 
     Store.renameSession(session.id, name);
     Store.updateSessionSettings(session.id, { ticker, splits, totalCapital: capital, targetProfit: target });
@@ -215,13 +215,13 @@
     if (!session) return;
 
     const type = UI.getSelectedTxType();
-    if (!type) { alert('거래 유형을 선택하세요.'); return; }
+    if (!type) { UI.toast('거래 유형을 선택하세요.', 'error'); return; }
 
     const date = document.getElementById('tx-date').value;
     const price = Number(document.getElementById('tx-price').value);
     const qty = Number(document.getElementById('tx-qty').value);
 
-    if (!price || !qty) { alert('가격과 수량을 입력하세요.'); return; }
+    if (!price || !qty) { UI.toast('가격과 수량을 입력하세요.', 'error'); return; }
 
     const tx = { type, date, price, quantity: qty };
 
@@ -284,34 +284,133 @@
   // Auth modal
   document.getElementById('btn-auth')?.addEventListener('click', () => UI.openAuthModal());
 
+  // Auth tab switching
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelectorAll('.auth-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById('auth-tab-' + this.dataset.tab).style.display = '';
+      document.getElementById('auth-title').textContent =
+        this.dataset.tab === 'login' ? '로그인' : this.dataset.tab === 'register' ? '회원가입' : '비밀번호 찾기';
+    });
+  });
+
   // Login
   document.getElementById('btn-login')?.addEventListener('click', async function () {
     const id = document.getElementById('auth-id').value.trim();
     const pw = document.getElementById('auth-pw').value;
-    if (!id || !pw) { UI.showAuthError('아이디와 비밀번호를 입력하세요.'); return; }
+    if (!id || !pw) { UI.showAuthError('auth-error', '아이디와 비밀번호를 입력하세요.'); return; }
+    this.disabled = true; this.textContent = '로그인 중...';
     try {
       const res = await API.login(id, pw);
       Store.setAuth(res.token, res.username);
       await Store.syncFromServer();
       UI.closeModal('modal-auth');
+      UI.toast('로그인되었습니다.');
       render();
     } catch (e) {
-      UI.showAuthError(e.message);
+      UI.showAuthError('auth-error', e.message);
+    } finally {
+      this.disabled = false; this.textContent = '로그인';
     }
+  });
+
+  // Enter key for login
+  document.getElementById('auth-pw')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('btn-login').click();
   });
 
   // Register
   document.getElementById('btn-register')?.addEventListener('click', async function () {
-    const id = document.getElementById('auth-id').value.trim();
-    const pw = document.getElementById('auth-pw').value;
-    if (!id || !pw) { UI.showAuthError('아이디와 비밀번호를 입력하세요.'); return; }
+    const id = document.getElementById('reg-id').value.trim();
+    const pw = document.getElementById('reg-pw').value;
+    const pw2 = document.getElementById('reg-pw2').value;
+    const sq = document.getElementById('reg-sq').value;
+    const sa = document.getElementById('reg-sa').value.trim();
+    if (!id || !pw) { UI.showAuthError('reg-error', '아이디와 비밀번호를 입력하세요.'); return; }
+    if (pw !== pw2) { UI.showAuthError('reg-error', '비밀번호가 일치하지 않습니다.'); return; }
+    if (!sq) { UI.showAuthError('reg-error', '보안질문을 선택하세요.'); return; }
+    if (!sa) { UI.showAuthError('reg-error', '보안질문 답변을 입력하세요.'); return; }
+    this.disabled = true; this.textContent = '가입 중...';
     try {
-      const res = await API.register(id, pw);
+      const res = await API.register(id, pw, sq, sa);
       Store.setAuth(res.token, res.username);
       UI.closeModal('modal-auth');
+      UI.toast('회원가입이 완료되었습니다.');
       render();
     } catch (e) {
-      UI.showAuthError(e.message);
+      UI.showAuthError('reg-error', e.message);
+    } finally {
+      this.disabled = false; this.textContent = '회원가입';
+    }
+  });
+
+  // Reset password - Step 1: Get security question
+  document.getElementById('btn-reset-find')?.addEventListener('click', async function () {
+    const id = document.getElementById('reset-id').value.trim();
+    if (!id) { UI.showAuthError('reset-error', '아이디를 입력하세요.'); return; }
+    this.disabled = true; this.textContent = '확인 중...';
+    try {
+      const res = await API.getSecurityQuestion(id);
+      document.getElementById('reset-question').textContent = res.securityQuestion;
+      document.getElementById('reset-step1').style.display = 'none';
+      document.getElementById('reset-step2').style.display = '';
+    } catch (e) {
+      UI.showAuthError('reset-error', e.message);
+    } finally {
+      this.disabled = false; this.textContent = '보안질문 확인';
+    }
+  });
+
+  // Reset password - Step 2: Submit answer + new password
+  document.getElementById('btn-reset-submit')?.addEventListener('click', async function () {
+    const id = document.getElementById('reset-id').value.trim();
+    const answer = document.getElementById('reset-answer').value.trim();
+    const newPw = document.getElementById('reset-new-pw').value;
+    if (!answer || !newPw) { UI.showAuthError('reset-error2', '답변과 새 비밀번호를 입력하세요.'); return; }
+    this.disabled = true; this.textContent = '재설정 중...';
+    try {
+      const res = await API.resetPassword(id, answer, newPw);
+      document.getElementById('reset-success').textContent = res.message;
+      document.getElementById('reset-success').style.display = '';
+      document.getElementById('reset-error2').style.display = 'none';
+    } catch (e) {
+      UI.showAuthError('reset-error2', e.message);
+    } finally {
+      this.disabled = false; this.textContent = '비밀번호 재설정';
+    }
+  });
+
+  // Reset password - Back button
+  document.getElementById('btn-reset-back')?.addEventListener('click', function () {
+    document.getElementById('reset-step1').style.display = '';
+    document.getElementById('reset-step2').style.display = 'none';
+    document.getElementById('reset-error').style.display = 'none';
+  });
+
+  // Change password (logged in)
+  document.getElementById('btn-change-pw-show')?.addEventListener('click', function () {
+    const sec = document.getElementById('change-pw-section');
+    sec.style.display = sec.style.display === 'none' ? '' : 'none';
+  });
+
+  document.getElementById('btn-change-pw')?.addEventListener('click', async function () {
+    const cur = document.getElementById('change-pw-current').value;
+    const newPw = document.getElementById('change-pw-new').value;
+    if (!cur || !newPw) { UI.showAuthError('change-pw-error', '현재 비밀번호와 새 비밀번호를 입력하세요.'); return; }
+    this.disabled = true; this.textContent = '변경 중...';
+    try {
+      const res = await API.changePassword(cur, newPw);
+      document.getElementById('change-pw-success').textContent = res.message;
+      document.getElementById('change-pw-success').style.display = '';
+      document.getElementById('change-pw-error').style.display = 'none';
+      document.getElementById('change-pw-current').value = '';
+      document.getElementById('change-pw-new').value = '';
+    } catch (e) {
+      UI.showAuthError('change-pw-error', e.message);
+    } finally {
+      this.disabled = false; this.textContent = '비밀번호 변경';
     }
   });
 
@@ -319,14 +418,28 @@
   document.getElementById('btn-logout')?.addEventListener('click', function () {
     Store.clearAuth();
     UI.closeModal('modal-auth');
+    UI.toast('로그아웃되었습니다.');
     render();
   });
 
   // Sync from server
   document.getElementById('btn-sync')?.addEventListener('click', async function () {
-    await Store.syncFromServer();
-    UI.closeModal('modal-auth');
-    render();
+    this.disabled = true; this.textContent = '불러오는 중...';
+    try {
+      await Store.syncFromServer();
+      UI.closeModal('modal-auth');
+      UI.toast('데이터를 불러왔습니다.');
+      render();
+    } catch (e) {
+      UI.toast('동기화에 실패했습니다.', 'error');
+    } finally {
+      this.disabled = false; this.textContent = '서버에서 데이터 불러오기';
+    }
+  });
+
+  // ESC key to close modals
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') UI.closeAllModals();
   });
 
   // Settings modal

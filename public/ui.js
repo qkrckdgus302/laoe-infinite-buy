@@ -537,18 +537,50 @@ const UI = {
     const modal = document.getElementById('modal-auth');
     modal.style.display = 'flex';
     const loggedIn = Store.isLoggedIn();
-    document.getElementById('auth-form').style.display = loggedIn ? 'none' : '';
+    document.getElementById('auth-tabs-wrap').style.display = loggedIn ? 'none' : '';
     document.getElementById('auth-logged-in').style.display = loggedIn ? '' : 'none';
     if (loggedIn) {
       document.getElementById('auth-username').textContent = Store.getAuth().username;
+      document.getElementById('auth-title').textContent = '내 계정';
+      document.getElementById('change-pw-section').style.display = 'none';
+      document.getElementById('change-pw-error').style.display = 'none';
+      document.getElementById('change-pw-success').style.display = 'none';
+    } else {
+      document.getElementById('auth-title').textContent = '로그인';
+      // Reset to login tab
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.auth-tab[data-tab="login"]')?.classList.add('active');
+      document.querySelectorAll('.auth-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById('auth-tab-login').style.display = '';
+      // Reset reset-password steps
+      document.getElementById('reset-step1').style.display = '';
+      document.getElementById('reset-step2').style.display = 'none';
     }
-    document.getElementById('auth-error').style.display = 'none';
+    // Clear all errors
+    document.querySelectorAll('#modal-auth .error-msg').forEach(e => e.style.display = 'none');
+    document.querySelectorAll('#modal-auth .success-msg').forEach(e => e.style.display = 'none');
   },
 
-  showAuthError(msg) {
-    const el = document.getElementById('auth-error');
+  showAuthError(elementId, msg) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
     el.textContent = msg;
     el.style.display = '';
+  },
+
+  // --- Toast Notification ---
+  toast(msg, type) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
+    el.textContent = msg;
+    container.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, 2500);
   },
 
   // --- Settings Modal ---

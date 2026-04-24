@@ -266,23 +266,123 @@
         <button class="modal-close">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- Logged In View -->
         <div id="auth-logged-in" style="display:none;">
-          <p class="auth-info"><span id="auth-username"></span>님 환영합니다</p>
-          <button id="btn-sync" class="btn-secondary full-width" style="margin-bottom:8px;">서버에서 데이터 불러오기</button>
-          <button id="btn-logout" class="btn-danger full-width">로그아웃</button>
+          <div class="auth-profile">
+            <div class="auth-avatar">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>
+            </div>
+            <p class="auth-info"><span id="auth-username"></span></p>
+          </div>
+          <button id="btn-sync" class="btn-secondary full-width" style="margin-bottom:8px;">
+            서버에서 데이터 불러오기
+          </button>
+          <button id="btn-change-pw-show" class="btn-secondary full-width" style="margin-bottom:8px;">
+            비밀번호 변경
+          </button>
+          <div id="change-pw-section" style="display:none;">
+            <div class="form-group">
+              <label>현재 비밀번호</label>
+              <input type="password" id="change-pw-current" class="input" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+              <label>새 비밀번호 (6자 이상)</label>
+              <input type="password" id="change-pw-new" class="input" autocomplete="new-password">
+            </div>
+            <div id="change-pw-error" class="error-msg" style="display:none;"></div>
+            <div id="change-pw-success" class="success-msg" style="display:none;"></div>
+            <button id="btn-change-pw" class="btn-primary full-width">비밀번호 변경</button>
+          </div>
+          <button id="btn-logout" class="btn-danger full-width" style="margin-top:8px;">로그아웃</button>
         </div>
-        <div id="auth-form">
-          <div class="form-group">
-            <label>아이디</label>
-            <input type="text" id="auth-id" class="input" autocomplete="username">
+
+        <!-- Auth Tabs (login/register/reset) -->
+        <div id="auth-tabs-wrap">
+          <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">로그인</button>
+            <button class="auth-tab" data-tab="register">회원가입</button>
+            <button class="auth-tab" data-tab="reset">비밀번호 찾기</button>
           </div>
-          <div class="form-group">
-            <label>비밀번호</label>
-            <input type="password" id="auth-pw" class="input" autocomplete="current-password">
+
+          <!-- Login Tab -->
+          <div id="auth-tab-login" class="auth-tab-content">
+            <div class="form-group">
+              <label>아이디</label>
+              <input type="text" id="auth-id" class="input" autocomplete="username" placeholder="아이디를 입력하세요">
+            </div>
+            <div class="form-group">
+              <label>비밀번호</label>
+              <input type="password" id="auth-pw" class="input" autocomplete="current-password" placeholder="비밀번호를 입력하세요">
+            </div>
+            <div id="auth-error" class="error-msg" style="display:none;"></div>
+            <button id="btn-login" class="btn-primary full-width">로그인</button>
           </div>
-          <div id="auth-error" class="error-msg" style="display:none;"></div>
-          <button id="btn-login" class="btn-primary full-width">로그인</button>
-          <button id="btn-register" class="btn-secondary full-width" style="margin-top:8px;">회원가입</button>
+
+          <!-- Register Tab -->
+          <div id="auth-tab-register" class="auth-tab-content" style="display:none;">
+            <div class="form-group">
+              <label>아이디 <small class="hint-inline">영문/숫자/밑줄, 3~20자</small></label>
+              <input type="text" id="reg-id" class="input" autocomplete="username" placeholder="아이디">
+            </div>
+            <div class="form-group">
+              <label>비밀번호 <small class="hint-inline">6자 이상</small></label>
+              <input type="password" id="reg-pw" class="input" autocomplete="new-password" placeholder="비밀번호">
+            </div>
+            <div class="form-group">
+              <label>비밀번호 확인</label>
+              <input type="password" id="reg-pw2" class="input" autocomplete="new-password" placeholder="비밀번호 재입력">
+            </div>
+            <div class="form-group">
+              <label>보안질문 <small class="hint-inline">비밀번호 찾기에 사용</small></label>
+              <select id="reg-sq" class="input">
+                <option value="">보안질문을 선택하세요</option>
+                <option value="첫 번째 반려동물의 이름은?">첫 번째 반려동물의 이름은?</option>
+                <option value="태어난 도시는?">태어난 도시는?</option>
+                <option value="어머니의 성함은?">어머니의 성함은?</option>
+                <option value="졸업한 초등학교 이름은?">졸업한 초등학교 이름은?</option>
+                <option value="가장 좋아하는 음식은?">가장 좋아하는 음식은?</option>
+                <option value="가장 친한 친구의 이름은?">가장 친한 친구의 이름은?</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>보안질문 답변</label>
+              <input type="text" id="reg-sa" class="input" placeholder="답변을 입력하세요">
+            </div>
+            <div id="reg-error" class="error-msg" style="display:none;"></div>
+            <button id="btn-register" class="btn-primary full-width">회원가입</button>
+          </div>
+
+          <!-- Reset Password Tab -->
+          <div id="auth-tab-reset" class="auth-tab-content" style="display:none;">
+            <!-- Step 1: Enter username -->
+            <div id="reset-step1">
+              <div class="form-group">
+                <label>아이디</label>
+                <input type="text" id="reset-id" class="input" placeholder="가입한 아이디를 입력하세요">
+              </div>
+              <div id="reset-error" class="error-msg" style="display:none;"></div>
+              <button id="btn-reset-find" class="btn-primary full-width">보안질문 확인</button>
+            </div>
+            <!-- Step 2: Answer security question + new password -->
+            <div id="reset-step2" style="display:none;">
+              <div class="form-group">
+                <label>보안질문</label>
+                <div class="reset-question" id="reset-question"></div>
+              </div>
+              <div class="form-group">
+                <label>답변</label>
+                <input type="text" id="reset-answer" class="input" placeholder="보안질문 답변을 입력하세요">
+              </div>
+              <div class="form-group">
+                <label>새 비밀번호 (6자 이상)</label>
+                <input type="password" id="reset-new-pw" class="input" placeholder="새 비밀번호">
+              </div>
+              <div id="reset-error2" class="error-msg" style="display:none;"></div>
+              <div id="reset-success" class="success-msg" style="display:none;"></div>
+              <button id="btn-reset-submit" class="btn-primary full-width">비밀번호 재설정</button>
+              <button id="btn-reset-back" class="btn-secondary full-width" style="margin-top:8px;">← 돌아가기</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -329,6 +429,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast -->
+  <div id="toast-container" class="toast-container"></div>
 
   <script src="calc.js"></script>
   <script src="api.js"></script>

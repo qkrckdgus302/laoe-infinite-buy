@@ -7,7 +7,7 @@ export async function onRequestOptions() {
 
 export async function onRequestPost({ request, env }) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, securityQuestion, securityAnswer } = await request.json();
 
     if (!username || !password) {
       return jsonResponse({ error: '아이디와 비밀번호를 입력해주세요.' }, 400);
@@ -21,6 +21,12 @@ export async function onRequestPost({ request, env }) {
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       return jsonResponse({ error: '아이디는 영문, 숫자, 밑줄만 사용 가능합니다.' }, 400);
     }
+    if (!securityQuestion || !securityAnswer) {
+      return jsonResponse({ error: '보안질문과 답변을 입력해주세요.' }, 400);
+    }
+    if (securityAnswer.trim().length < 1) {
+      return jsonResponse({ error: '보안질문 답변을 입력해주세요.' }, 400);
+    }
 
     const existing = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
     if (existing) {
@@ -28,9 +34,10 @@ export async function onRequestPost({ request, env }) {
     }
 
     const passwordHash = await hashPassword(password);
+    const answerHash = await hashPassword(securityAnswer.trim().toLowerCase());
     const result = await env.DB.prepare(
-      'INSERT INTO users (username, password_hash) VALUES (?, ?)'
-    ).bind(username, passwordHash).run();
+      'INSERT INTO users (username, password_hash, security_question, security_answer_hash) VALUES (?, ?, ?, ?)'
+    ).bind(username, passwordHash, securityQuestion, answerHash).run();
 
     const userId = result.meta.last_row_id;
     await env.DB.prepare(

@@ -67,4 +67,12 @@ async function getUser(request, env) {
   return verifyToken(token, secret);
 }
 
-export { createToken, verifyToken, corsHeaders, jsonResponse, getUser };
+async function getAdmin(request, env) {
+  const user = await getUser(request, env);
+  if (!user) return null;
+  const row = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(user.userId).first();
+  if (!row || row.role !== 'admin') return null;
+  return user;
+}
+
+export { createToken, verifyToken, corsHeaders, jsonResponse, getUser, getAdmin };

@@ -17,15 +17,35 @@ const API = {
   },
 
   // Auth
-  async register(username, password) {
+  async register(username, password, securityQuestion, securityAnswer) {
     return this._fetch('/api/auth/register', {
-      method: 'POST', body: JSON.stringify({ username, password })
+      method: 'POST', body: JSON.stringify({ username, password, securityQuestion, securityAnswer })
     });
   },
 
   async login(username, password) {
     return this._fetch('/api/auth/login', {
       method: 'POST', body: JSON.stringify({ username, password })
+    });
+  },
+
+  // Password reset (2-step)
+  async getSecurityQuestion(username) {
+    return this._fetch('/api/auth/reset-password', {
+      method: 'POST', body: JSON.stringify({ username })
+    });
+  },
+
+  async resetPassword(username, securityAnswer, newPassword) {
+    return this._fetch('/api/auth/reset-password', {
+      method: 'POST', body: JSON.stringify({ username, securityAnswer, newPassword })
+    });
+  },
+
+  // Change password (logged in)
+  async changePassword(currentPassword, newPassword) {
+    return this._fetch('/api/auth/change-password', {
+      method: 'POST', body: JSON.stringify({ currentPassword, newPassword })
     });
   },
 
