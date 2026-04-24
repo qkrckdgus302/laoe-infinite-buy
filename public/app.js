@@ -180,11 +180,22 @@
     UI.showView('view-setup');
     // Reset setup form
     document.getElementById('setup-name').value = '';
+    document.getElementById('setup-name').placeholder = '예: TQQQ 30분할';
     document.getElementById('setup-capital').value = '';
     document.getElementById('setup-target').value = '';
     document.getElementById('setup-mid-t') && (document.getElementById('setup-mid-t').value = '');
     document.getElementById('setup-mid-avg') && (document.getElementById('setup-mid-avg').value = '');
     document.getElementById('setup-mid-qty') && (document.getElementById('setup-mid-qty').value = '');
+    // Reset toggles to default
+    UI.resetToggle('setup-ticker', 'TQQQ');
+    UI.resetToggle('setup-splits', '30');
+    UI.resetToggle('setup-entry', 'new');
+    // Reset target hint
+    const hintEl = document.getElementById('setup-target-default');
+    if (hintEl) hintEl.textContent = '기본 15% (라오어 원칙)';
+    // Hide mid-entry fields
+    const midFields = document.getElementById('mid-entry-fields');
+    if (midFields) midFields.style.display = 'none';
   }
 
   // Clean up abandoned setup when switching tabs
@@ -353,21 +364,17 @@
     });
   });
 
-  // Login (form submit for Chrome password save)
+  // Login (form submits to hidden iframe for Chrome password save)
   document.getElementById('auth-tab-login')?.addEventListener('submit', async function (e) {
-    e.preventDefault();
+    // Don't preventDefault — let form submit to hidden iframe for Chrome password save
     const btn = document.getElementById('btn-login');
     const id = document.getElementById('auth-id').value.trim();
     const pw = document.getElementById('auth-pw').value;
-    if (!id || !pw) { UI.showAuthError('auth-error', '아이디와 비밀번호를 입력하세요.'); return; }
+    if (!id || !pw) { e.preventDefault(); UI.showAuthError('auth-error', '아이디와 비밀번호를 입력하세요.'); return; }
     btn.disabled = true; btn.textContent = '로그인 중...';
     try {
       const res = await API.login(id, pw);
       Store.setAuth(res.token, res.username);
-      // Chrome 비밀번호 저장 트리거
-      if (window.PasswordCredential) {
-        try { await navigator.credentials.store(new PasswordCredential({ id, password: pw })); } catch {}
-      }
       try { await Store.syncFromServer(); } catch { /* 동기화 실패해도 로그인은 유지 */ }
       UI.closeModal('modal-auth');
       UI.toast('로그인되었습니다.');
@@ -376,39 +383,37 @@
       if (s?.settings?.ticker) fetchPriceData(s.settings.ticker);
       fetchMarketData();
       render();
-    } catch (e) {
-      UI.showAuthError('auth-error', e.message);
+    } catch (err) {
+      e.preventDefault();
+      UI.showAuthError('auth-error', err.message);
     } finally {
       btn.disabled = false; btn.textContent = '로그인';
     }
   });
 
-  // Register (form submit for Chrome password save)
+  // Register (form submits to hidden iframe for Chrome password save)
   document.getElementById('auth-tab-register')?.addEventListener('submit', async function (e) {
-    e.preventDefault();
+    // Don't preventDefault — let form submit to hidden iframe for Chrome password save
     const btn = document.getElementById('btn-register');
     const id = document.getElementById('reg-id').value.trim();
     const pw = document.getElementById('reg-pw').value;
     const pw2 = document.getElementById('reg-pw2').value;
     const sq = document.getElementById('reg-sq').value;
     const sa = document.getElementById('reg-sa').value.trim();
-    if (!id || !pw) { UI.showAuthError('reg-error', '아이디와 비밀번호를 입력하세요.'); return; }
-    if (pw !== pw2) { UI.showAuthError('reg-error', '비밀번호가 일치하지 않습니다.'); return; }
-    if (!sq) { UI.showAuthError('reg-error', '보안질문을 선택하세요.'); return; }
-    if (!sa) { UI.showAuthError('reg-error', '보안질문 답변을 입력하세요.'); return; }
+    if (!id || !pw) { e.preventDefault(); UI.showAuthError('reg-error', '아이디와 비밀번호를 입력하세요.'); return; }
+    if (pw !== pw2) { e.preventDefault(); UI.showAuthError('reg-error', '비밀번호가 일치하지 않습니다.'); return; }
+    if (!sq) { e.preventDefault(); UI.showAuthError('reg-error', '보안질문을 선택하세요.'); return; }
+    if (!sa) { e.preventDefault(); UI.showAuthError('reg-error', '보안질문 답변을 입력하세요.'); return; }
     btn.disabled = true; btn.textContent = '가입 중...';
     try {
       const res = await API.register(id, pw, sq, sa);
       Store.setAuth(res.token, res.username);
-      // Chrome 비밀번호 저장 트리거
-      if (window.PasswordCredential) {
-        try { await navigator.credentials.store(new PasswordCredential({ id, password: pw })); } catch {}
-      }
       UI.closeModal('modal-auth');
       UI.toast('회원가입이 완료되었습니다.');
       render();
-    } catch (e) {
-      UI.showAuthError('reg-error', e.message);
+    } catch (err) {
+      e.preventDefault();
+      UI.showAuthError('reg-error', err.message);
     } finally {
       btn.disabled = false; btn.textContent = '회원가입';
     }

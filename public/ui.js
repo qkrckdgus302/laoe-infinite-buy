@@ -661,6 +661,14 @@ const UI = {
     return active?.dataset.value || null;
   },
 
+  resetToggle(groupId, value) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.btn-toggle').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === value);
+    });
+  },
+
   // --- Escape HTML ---
   _esc(s) {
     const div = document.createElement('div');

@@ -209,25 +209,22 @@
   // --- Events ---
   function bindEvents() {
     // Login
-    document.getElementById('btn-login').addEventListener('click', async () => {
+    // Login (form submit to hidden iframe for Chrome password save)
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
       document.getElementById('login-error').style.display = 'none';
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-pw').value;
-      if (!id || !pw) { showError('아이디와 비밀번호를 입력하세요.'); return; }
+      if (!id || !pw) { e.preventDefault(); showError('아이디와 비밀번호를 입력하세요.'); return; }
       try {
         const res = await API.login(id, pw);
         saveAuth(res.token, res.username);
         // Verify admin access
         await adminFetch('/api/admin/stats');
         showDashboard();
-      } catch (e) {
-        showError(e.message === 'Unauthorized' ? '관리자 계정이 아닙니다.' : e.message);
+      } catch (err) {
+        e.preventDefault();
+        showError(err.message === 'Unauthorized' ? '관리자 계정이 아닙니다.' : err.message);
       }
-    });
-
-    // Enter key for login
-    document.getElementById('login-pw').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') document.getElementById('btn-login').click();
     });
 
     // Logout
