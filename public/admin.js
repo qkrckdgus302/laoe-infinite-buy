@@ -209,20 +209,23 @@
   // --- Events ---
   function bindEvents() {
     // Login
-    // Login (form submit to hidden iframe for Chrome password save)
     document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
       document.getElementById('login-error').style.display = 'none';
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-pw').value;
-      if (!id || !pw) { e.preventDefault(); showError('아이디와 비밀번호를 입력하세요.'); return; }
+      if (!id || !pw) { showError('아이디와 비밀번호를 입력하세요.'); return; }
       try {
         const res = await API.login(id, pw);
+        // Chrome 비밀번호 저장 (PasswordCredential API)
+        if (window.PasswordCredential) {
+          try { await navigator.credentials.store(new PasswordCredential({ id: id, password: pw })); } catch (_) {}
+        }
         saveAuth(res.token, res.username);
         // Verify admin access
         await adminFetch('/api/admin/stats');
         showDashboard();
       } catch (err) {
-        e.preventDefault();
         showError(err.message === 'Unauthorized' ? '관리자 계정이 아닙니다.' : err.message);
       }
     });

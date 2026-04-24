@@ -340,7 +340,7 @@
           </div>
 
           <!-- Login Tab -->
-          <form id="auth-tab-login" class="auth-tab-content" action="about:blank" method="post" target="pw-save-frame">
+          <form id="auth-tab-login" class="auth-tab-content">
             <div class="form-group">
               <label>아이디</label>
               <input type="text" id="auth-id" name="username" class="input" autocomplete="username" placeholder="아이디를 입력하세요">
@@ -354,7 +354,7 @@
           </form>
 
           <!-- Register Tab -->
-          <form id="auth-tab-register" class="auth-tab-content" style="display:none;" action="about:blank" method="post" target="pw-save-frame">
+          <form id="auth-tab-register" class="auth-tab-content" style="display:none;">
             <div class="form-group">
               <label>아이디 <small class="hint-inline">영문/숫자/밑줄, 3~20자</small></label>
               <input type="text" id="reg-id" name="username" class="input" autocomplete="username" placeholder="아이디">
@@ -464,9 +464,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Hidden iframe for Chrome password save -->
-  <iframe name="pw-save-frame" id="pw-save-frame" style="display:none;"></iframe>
 
   <!-- Toast -->
   <div id="toast-container" class="toast-container"></div>
