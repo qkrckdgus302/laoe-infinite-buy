@@ -181,8 +181,8 @@ const UI = {
       else if (score <= 75) { scoreEl.className = 'fg-score text-green'; ratingEl.className = 'fg-rating text-green'; }
       else { scoreEl.className = 'fg-score text-green'; ratingEl.className = 'fg-rating text-green'; }
 
-      // Move pointer
-      if (pointer) pointer.style.left = `${score}%`;
+      // Move pointer (clamp to 2%-98% to stay within gauge)
+      if (pointer) pointer.style.left = `${Math.max(2, Math.min(98, score))}%`;
       if (section) section.style.display = '';
     } else {
       if (section) section.style.display = 'none';
@@ -545,6 +545,7 @@ const UI = {
       document.getElementById('change-pw-section').style.display = 'none';
       document.getElementById('change-pw-error').style.display = 'none';
       document.getElementById('change-pw-success').style.display = 'none';
+      document.getElementById('security-q-section').style.display = 'none';
     } else {
       document.getElementById('auth-title').textContent = '로그인';
       // Reset to login tab
@@ -556,9 +557,12 @@ const UI = {
       document.getElementById('reset-step1').style.display = '';
       document.getElementById('reset-step2').style.display = 'none';
     }
-    // Clear all errors
+    // Clear all errors and success messages
     document.querySelectorAll('#modal-auth .error-msg').forEach(e => e.style.display = 'none');
     document.querySelectorAll('#modal-auth .success-msg').forEach(e => e.style.display = 'none');
+    // Clear all input fields
+    document.querySelectorAll('#modal-auth input').forEach(i => i.value = '');
+    document.querySelectorAll('#modal-auth select').forEach(s => s.selectedIndex = 0);
   },
 
   showAuthError(elementId, msg) {

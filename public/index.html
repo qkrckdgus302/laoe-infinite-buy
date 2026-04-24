@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="무한매수법">
   <meta name="theme-color" content="#1a1230">
+  <meta name="description" content="라오어 무한매수법 투자 계산기 V4.0 — TQQQ/SOXL 분할매수 관리">
   <link rel="manifest" href="/manifest.webmanifest">
   <title>무한매수법 4.0</title>
   <link rel="stylesheet" href="style.css">
@@ -19,10 +20,10 @@
         <h1 class="logo">무한매수법 <span class="version-badge">V4.0</span></h1>
       </div>
       <div class="topbar-right">
-        <button id="btn-auth" class="icon-btn" title="로그인">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>
+        <button id="btn-auth" class="icon-btn" title="로그인" aria-label="계정" type="button">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
         </button>
-        <button id="btn-settings" class="icon-btn" title="설정">
+        <button id="btn-settings" class="icon-btn" title="설정" aria-label="설정" type="button">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>
@@ -47,6 +48,18 @@
       <div class="market-item" id="market-exchange">
         <span class="market-label">USD/KRW</span>
         <span class="market-value">--</span>
+      </div>
+    </div>
+
+    <!-- View: Login Required -->
+    <div id="view-login-required" class="view" style="display:none;">
+      <div class="empty-state">
+        <div class="auth-avatar" style="width:64px;height:64px;margin:0 auto 16px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+        </div>
+        <h2>로그인이 필요합니다</h2>
+        <p>무한매수법을 사용하려면 로그인 또는 회원가입을 해주세요.</p>
+        <button id="btn-goto-login" class="btn-primary" type="button">로그인 / 회원가입</button>
       </div>
     </div>
 
@@ -185,7 +198,7 @@
 
       <!-- 처음 매수 안내 / 오늘의 주문 -->
       <div class="card" id="orders-section">
-        <h3 class="card-title" id="orders-title">📋 오늘의 주문</h3>
+        <h3 class="card-title" id="orders-title">오늘의 주문</h3>
         <div id="orders-content"></div>
       </div>
 
@@ -206,14 +219,14 @@
 
       <!-- T값 추이 차트 -->
       <div class="card" id="chart-section">
-        <h3 class="card-title">📈 T값 추이</h3>
+        <h3 class="card-title">T값 추이</h3>
         <canvas id="chart-canvas" height="200"></canvas>
       </div>
     </div>
   </div>
 
   <!-- Modal: Transaction (Step 1: 액션 선택) -->
-  <div id="modal-tx" class="modal" style="display:none;">
+  <div id="modal-tx" class="modal" style="display:none;" role="dialog" aria-modal="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
@@ -258,7 +271,7 @@
   </div>
 
   <!-- Modal: Auth -->
-  <div id="modal-auth" class="modal" style="display:none;">
+  <div id="modal-auth" class="modal" style="display:none;" role="dialog" aria-modal="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">
@@ -270,14 +283,11 @@
         <div id="auth-logged-in" style="display:none;">
           <div class="auth-profile">
             <div class="auth-avatar">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
             </div>
             <p class="auth-info"><span id="auth-username"></span></p>
           </div>
-          <button id="btn-sync" class="btn-secondary full-width" style="margin-bottom:8px;">
-            서버에서 데이터 불러오기
-          </button>
-          <button id="btn-security-q-show" class="btn-secondary full-width" style="margin-bottom:8px;">
+          <button id="btn-security-q-show" class="btn-secondary full-width" style="margin-bottom:8px;" type="button">
             보안질문 설정
           </button>
           <div id="security-q-section" style="display:none;">
@@ -414,7 +424,7 @@
   </div>
 
   <!-- Modal: Settings -->
-  <div id="modal-settings" class="modal" style="display:none;">
+  <div id="modal-settings" class="modal" style="display:none;" role="dialog" aria-modal="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
       <div class="modal-header">

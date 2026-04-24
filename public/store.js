@@ -50,6 +50,13 @@ const Store = {
     API.clearToken();
   },
 
+  // 로그아웃 시 세션 데이터 전부 초기화
+  clearAllData() {
+    this._state = this._defaultState();
+    localStorage.removeItem(this.STORAGE_KEY);
+    this._notify();
+  },
+
   isLoggedIn() { return !!this._auth.token; },
 
   // --- Sessions ---
@@ -183,20 +190,20 @@ const Store = {
     if (!this.isLoggedIn()) return;
     clearTimeout(this._saveTimer);
     this._saveTimer = setTimeout(() => {
-      API.saveData(this._state).catch(() => {});
+      API.saveData(this._state).catch(() => {
+        if (typeof UI !== 'undefined') UI.toast('데이터 저장에 실패했습니다.', 'error');
+      });
     }, 2000);
   },
 
   async syncFromServer() {
     if (!this.isLoggedIn()) return;
-    try {
-      const data = await API.loadData();
-      if (data && data.sessions) {
-        this._state = data;
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._state));
-        this._notify();
-      }
-    } catch { /* ignore */ }
+    const data = await API.loadData();
+    if (data && data.sessions) {
+      this._state = data;
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._state));
+      this._notify();
+    }
   },
 
   // --- Import full state (for server load) ---

@@ -12,6 +12,14 @@ const API = {
     if (this._token) headers['Authorization'] = `Bearer ${this._token}`;
     const resp = await fetch(url, { ...options, headers });
     const data = await resp.json();
+    if (resp.status === 401 && this._token) {
+      this.clearToken();
+      if (typeof Store !== 'undefined') {
+        Store.clearAuth();
+        Store.clearAllData();
+      }
+      if (typeof UI !== 'undefined') UI.toast('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
+    }
     if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
     return data;
   },

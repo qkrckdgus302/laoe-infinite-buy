@@ -8,6 +8,25 @@
   let _lastClosePrice = null;
 
   function render() {
+    // 로그인 필수 — 비로그인 시 로그인 화면만 표시
+    if (!Store.isLoggedIn()) {
+      document.getElementById('session-tabs').style.display = 'none';
+      document.getElementById('market-bar').style.display = 'none';
+      document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+      document.getElementById('view-login-required').style.display = 'block';
+      // 로그인 상태 아이콘 업데이트
+      const authBtn = document.getElementById('btn-auth');
+      if (authBtn) authBtn.classList.remove('logged-in');
+      return;
+    }
+
+    // 로그인 상태 표시
+    document.getElementById('view-login-required').style.display = 'none';
+    document.getElementById('session-tabs').style.display = '';
+    document.getElementById('market-bar').style.display = '';
+    const authBtn = document.getElementById('btn-auth');
+    if (authBtn) authBtn.classList.add('logged-in');
+
     const sessions = Store.getSessions();
     const session = Store.getActiveSession();
 
@@ -238,6 +257,12 @@
       // price and qty are already correct — they represent sell price/qty
     }
 
+    // 수정 모드일 경우 기존 거래 삭제
+    if (window._pendingEditTxId) {
+      Store.deleteTransaction(session.id, window._pendingEditTxId);
+      window._pendingEditTxId = null;
+    }
+
     Store.addTransaction(session.id, tx);
     UI.closeModal('modal-tx');
   });
@@ -252,7 +277,7 @@
       }
       return;
     }
-    // Edit transaction (placeholder — re-opens modal with data)
+    // Edit transaction — store pending edit, delete only after save
     const editBtn = e.target.closest('.tx-edit');
     if (editBtn) {
       const session = Store.getActiveSession();
@@ -260,8 +285,8 @@
       const txId = editBtn.dataset.txId;
       const tx = session.transactions.find(t => t.id === txId);
       if (!tx) return;
-      // Delete old + open modal for re-entry
-      Store.deleteTransaction(session.id, txId);
+      // Store the pending edit tx id for deletion on save
+      window._pendingEditTxId = txId;
       UI.openTxModal(session);
     }
   });
@@ -283,6 +308,7 @@
 
   // Auth modal
   document.getElementById('btn-auth')?.addEventListener('click', () => UI.openAuthModal());
+  document.getElementById('btn-goto-login')?.addEventListener('click', () => UI.openAuthModal());
 
   // Auth tab switching
   document.querySelectorAll('.auth-tab').forEach(tab => {
@@ -305,9 +331,13 @@
     try {
       const res = await API.login(id, pw);
       Store.setAuth(res.token, res.username);
-      await Store.syncFromServer();
+      try { await Store.syncFromServer(); } catch { /* 동기화 실패해도 로그인은 유지 */ }
       UI.closeModal('modal-auth');
       UI.toast('로그인되었습니다.');
+      // 로그인 후 시장 데이터 가져오기
+      const s = Store.getActiveSession();
+      if (s?.settings?.ticker) fetchPriceData(s.settings.ticker);
+      fetchMarketData();
       render();
     } catch (e) {
       UI.showAuthError('auth-error', e.message);
@@ -459,24 +489,14 @@
   // Logout
   document.getElementById('btn-logout')?.addEventListener('click', function () {
     Store.clearAuth();
+    Store.clearAllData();
+    UI.setPriceData(null);
+    UI.setFearGreedData(null);
+    UI.setExchangeData(null);
+    _lastClosePrice = null;
     UI.closeModal('modal-auth');
     UI.toast('로그아웃되었습니다.');
     render();
-  });
-
-  // Sync from server
-  document.getElementById('btn-sync')?.addEventListener('click', async function () {
-    this.disabled = true; this.textContent = '불러오는 중...';
-    try {
-      await Store.syncFromServer();
-      UI.closeModal('modal-auth');
-      UI.toast('데이터를 불러왔습니다.');
-      render();
-    } catch (e) {
-      UI.toast('동기화에 실패했습니다.', 'error');
-    } finally {
-      this.disabled = false; this.textContent = '서버에서 데이터 불러오기';
-    }
   });
 
   // ESC key to close modals
@@ -518,6 +538,7 @@
   // Close modals
   document.addEventListener('click', function (e) {
     if (e.target.classList.contains('modal-backdrop') || e.target.classList.contains('modal-close')) {
+      window._pendingEditTxId = null;
       UI.closeAllModals();
     }
   });
@@ -546,18 +567,25 @@
     } catch { /* silent */ }
   }
 
-  // Initial data fetch
-  const session = Store.getActiveSession();
-  if (session?.settings?.ticker) {
-    fetchPriceData(session.settings.ticker);
-  }
-  fetchMarketData();
-
-  // Refresh market data every 5 minutes
-  setInterval(fetchMarketData, 300000);
-
-  // Sync from server on load if logged in
+  // Initial data fetch — 로그인 상태일 때만
   if (Store.isLoggedIn()) {
-    Store.syncFromServer().then(render);
+    const session = Store.getActiveSession();
+    if (session?.settings?.ticker) {
+      fetchPriceData(session.settings.ticker);
+    }
+    fetchMarketData();
+
+    // Sync from server on load
+    Store.syncFromServer().then(() => {
+      render();
+      // 동기화 후 세션 데이터로 가격 갱신
+      const s = Store.getActiveSession();
+      if (s?.settings?.ticker) fetchPriceData(s.settings.ticker);
+    }).catch(() => {});
   }
+
+  // Refresh market data every 5 minutes (로그인 상태만)
+  setInterval(() => {
+    if (Store.isLoggedIn()) fetchMarketData();
+  }, 300000);
 })();
