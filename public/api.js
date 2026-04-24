@@ -49,6 +49,17 @@ const API = {
     });
   },
 
+  // Security question (logged in)
+  async getMySecurityQuestion() {
+    return this._fetch('/api/auth/security-question');
+  },
+
+  async setSecurityQuestion(securityQuestion, securityAnswer) {
+    return this._fetch('/api/auth/security-question', {
+      method: 'POST', body: JSON.stringify({ securityQuestion, securityAnswer })
+    });
+  },
+
   // User data
   async loadData() {
     return this._fetch('/api/data');

@@ -277,6 +277,31 @@
           <button id="btn-sync" class="btn-secondary full-width" style="margin-bottom:8px;">
             서버에서 데이터 불러오기
           </button>
+          <button id="btn-security-q-show" class="btn-secondary full-width" style="margin-bottom:8px;">
+            보안질문 설정
+          </button>
+          <div id="security-q-section" style="display:none;">
+            <p id="security-q-current" class="hint-inline" style="margin-bottom:8px;"></p>
+            <div class="form-group">
+              <label>보안질문</label>
+              <select id="security-q-select" class="input">
+                <option value="">보안질문을 선택하세요</option>
+                <option value="첫 번째 반려동물의 이름은?">첫 번째 반려동물의 이름은?</option>
+                <option value="태어난 도시는?">태어난 도시는?</option>
+                <option value="어머니의 성함은?">어머니의 성함은?</option>
+                <option value="졸업한 초등학교 이름은?">졸업한 초등학교 이름은?</option>
+                <option value="가장 좋아하는 음식은?">가장 좋아하는 음식은?</option>
+                <option value="가장 친한 친구의 이름은?">가장 친한 친구의 이름은?</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>답변</label>
+              <input type="text" id="security-q-answer" class="input" placeholder="답변을 입력하세요">
+            </div>
+            <div id="security-q-error" class="error-msg" style="display:none;"></div>
+            <div id="security-q-success" class="success-msg" style="display:none;"></div>
+            <button id="btn-security-q-save" class="btn-primary full-width">보안질문 저장</button>
+          </div>
           <button id="btn-change-pw-show" class="btn-secondary full-width" style="margin-bottom:8px;">
             비밀번호 변경
           </button>

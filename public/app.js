@@ -389,6 +389,48 @@
     document.getElementById('reset-error').style.display = 'none';
   });
 
+  // Security question setup (logged in)
+  document.getElementById('btn-security-q-show')?.addEventListener('click', async function () {
+    const sec = document.getElementById('security-q-section');
+    if (sec.style.display === 'none') {
+      sec.style.display = '';
+      // Load current security question
+      try {
+        const res = await API.getMySecurityQuestion();
+        const cur = document.getElementById('security-q-current');
+        if (res.securityQuestion) {
+          cur.textContent = '현재 설정: ' + res.securityQuestion;
+        } else {
+          cur.textContent = '⚠️ 보안질문이 설정되지 않았습니다. 비밀번호 찾기를 위해 설정해주세요.';
+          cur.style.color = '#f59e0b';
+        }
+      } catch { /* ignore */ }
+    } else {
+      sec.style.display = 'none';
+    }
+  });
+
+  document.getElementById('btn-security-q-save')?.addEventListener('click', async function () {
+    const sq = document.getElementById('security-q-select').value;
+    const sa = document.getElementById('security-q-answer').value.trim();
+    if (!sq) { UI.showAuthError('security-q-error', '보안질문을 선택하세요.'); return; }
+    if (!sa) { UI.showAuthError('security-q-error', '답변을 입력하세요.'); return; }
+    this.disabled = true; this.textContent = '저장 중...';
+    try {
+      const res = await API.setSecurityQuestion(sq, sa);
+      document.getElementById('security-q-success').textContent = res.message;
+      document.getElementById('security-q-success').style.display = '';
+      document.getElementById('security-q-error').style.display = 'none';
+      document.getElementById('security-q-current').textContent = '현재 설정: ' + sq;
+      document.getElementById('security-q-current').style.color = '';
+      document.getElementById('security-q-answer').value = '';
+    } catch (e) {
+      UI.showAuthError('security-q-error', e.message);
+    } finally {
+      this.disabled = false; this.textContent = '보안질문 저장';
+    }
+  });
+
   // Change password (logged in)
   document.getElementById('btn-change-pw-show')?.addEventListener('click', function () {
     const sec = document.getElementById('change-pw-section');
