@@ -139,13 +139,19 @@ const UI = {
       return;
     }
 
-    const prices = this._priceData.prices.slice(-10);
+    const allPrices = this._priceData.prices.slice(-11);
+    const prices = allPrices.slice(-10);
     const last5 = prices.slice(-5);
     const avg5 = last5.reduce((s, p) => s + p.close, 0) / last5.length;
     if (avg) avg.innerHTML = `<span class="avg-badge">5일 평균</span> $${avg5.toFixed(2)}`;
 
+    // Build a map for previous close lookup (including the 11th item for the oldest displayed)
+    const allReversed = [...allPrices].reverse();
+
     grid.innerHTML = prices.reverse().map((p, i) => {
-      const prevClose = i < prices.length - 1 ? prices[i + 1]?.close : null;
+      // Find this price in allReversed, then get the next one (older) as prevClose
+      const idxInAll = allReversed.findIndex(a => a.date === p.date);
+      const prevClose = idxInAll >= 0 && idxInAll < allReversed.length - 1 ? allReversed[idxInAll + 1]?.close : null;
       const change = prevClose ? ((p.close - prevClose) / prevClose * 100) : null;
       const changeClass = change !== null ? (change >= 0 ? 'text-green' : 'text-red') : '';
       const changeStr = change !== null ? `${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : '';
