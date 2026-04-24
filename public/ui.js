@@ -312,9 +312,11 @@ const UI = {
     `).join('');
 
     this._updateTxFields(types[0]);
-    document.getElementById('tx-price').value = '';
+    // 전일 종가를 기본 체결가로 auto-fill
+    const prevClose = this._priceData?.previousClose;
+    document.getElementById('tx-price').value = prevClose ? prevClose.toFixed(2) : '';
     document.getElementById('tx-qty').value = '';
-    document.getElementById('tx-sell-price').value = '';
+    document.getElementById('tx-sell-price').value = prevClose ? prevClose.toFixed(2) : '';
     document.getElementById('tx-sell-qty').value = '';
   },
 
