@@ -81,7 +81,7 @@ const API = {
   },
 
   // Price
-  async getPrice(ticker, days = 10) {
+  async getPrice(ticker, days = 11) {
     return this._fetch(`/api/price?ticker=${encodeURIComponent(ticker)}&days=${days}`);
   },
 
