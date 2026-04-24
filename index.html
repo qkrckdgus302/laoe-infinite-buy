@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>라오어 무한매수법 계산기</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>무한매수법</h1>
+            <span class="version">V1.0</span>
+        </header>
+
+        <section class="settings">
+            <div class="setting-group">
+                <label>종목</label>
+                <div class="btn-group" id="ticker-group">
+                    <button class="btn active" data-value="TQQQ">TQQQ</button>
+                    <button class="btn" data-value="SOXL">SOXL</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>분할 수</label>
+                <div class="btn-group" id="division-group">
+                    <button class="btn" data-value="20">20분할</button>
+                    <button class="btn active" data-value="30">30분할</button>
+                    <button class="btn" data-value="40">40분할</button>
+                </div>
+                <small>적을수록 공격적, 클수록 안정적</small>
+            </div>
+
+            <div class="setting-group">
+                <label>목표 수익률 (%)</label>
+                <input type="number" id="target-rate" value="15" min="1" max="100">
+                <small>기본 15% (라오어 원칙)</small>
+            </div>
+
+            <div class="setting-group">
+                <label>진입 방식</label>
+                <div class="btn-group" id="entry-group">
+                    <button class="btn active" data-value="new">새로 시작</button>
+                    <button class="btn" data-value="mid">중간 진입</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>원금 ($)</label>
+                <input type="number" id="principal" placeholder="투자 원금 입력" min="1">
+            </div>
+
+            <button class="btn-start" id="btn-start">시작하기</button>
+            <small class="tip">초심자는 TQQQ 추천, 익숙해지면 SOXL</small>
+        </section>
+
+        <section class="result" id="result-section" style="display:none;">
+            <h2>매수 계획</h2>
+            <div class="summary" id="summary"></div>
+            <table id="buy-table">
+                <thead>
+                    <tr>
+                        <th>회차</th>
+                        <th>매수가</th>
+                        <th>수량</th>
+                        <th>매수금액</th>
+                        <th>누적투자</th>
+                        <th>평단가</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div class="sell-info" id="sell-info"></div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
