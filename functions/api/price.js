@@ -42,12 +42,13 @@ async function tryYahooChart(ticker, days) {
         volume: quotes.volume?.[i] || 0,
       })).filter(p => p.close !== null).slice(-days);
 
-      // previousClose = 전일 종가 (가장 최근 완료된 거래일의 종가)
-      // meta.previousClose = Yahoo가 제공하는 전일 종가
-      // chartPreviousClose는 차트 범위 시작 전 종가라서 사용하면 안됨
-      const previousClose = meta.previousClose
-        ? Math.round(meta.previousClose * 100) / 100
-        : (prices.length >= 2 ? prices[prices.length - 2].close : (prices.length === 1 ? prices[0].close : null));
+      // previousClose = 전일 종가 (prices 배열에서 마지막-1)
+      // prices[-1] = 가장 최근 거래일 (장중엔 오늘, 장후/주말엔 마지막 거래일)
+      // prices[-2] = 그 전날 = 전일 종가
+      // meta.previousClose는 주말에 최근 종가를 반환하므로 사용하지 않음
+      const previousClose = prices.length >= 2
+        ? prices[prices.length - 2].close
+        : (prices.length === 1 ? prices[0].close : null);
 
       return {
         ticker: meta.symbol || ticker,
