@@ -42,13 +42,23 @@ async function tryYahooChart(ticker, days) {
         volume: quotes.volume?.[i] || 0,
       })).filter(p => p.close !== null).slice(-days);
 
-      // previousClose = 전일 종가 (prices 배열에서 마지막-1)
-      // prices[-1] = 가장 최근 거래일 (장중엔 오늘, 장후/주말엔 마지막 거래일)
-      // prices[-2] = 그 전날 = 전일 종가
-      // meta.previousClose는 주말에 최근 종가를 반환하므로 사용하지 않음
-      const previousClose = prices.length >= 2
+      // previousClose = 전일 종가 (미국 장 개장 여부에 따라 다름)
+      // 장중: prices[-1]이 실시간 미확정 → prices[-2] 사용
+      // 장외(주말/공휴일/장후): prices[-1]이 마지막 확정 종가 → prices[-1] 사용
+      const now = new Date();
+      const todayET = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(now);
+      const etStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+      const et = new Date(etStr);
+      const day = et.getDay(); // 0=Sun, 6=Sat
+      const mins = et.getHours() * 60 + et.getMinutes();
+      const marketOpen = day >= 1 && day <= 5 && mins >= 570 && mins < 960; // Mon-Fri 9:30-16:00
+      const lastDate = prices[prices.length - 1]?.date;
+
+      // 장중 + 오늘 데이터가 있으면 → 전날 종가 (prices[-2])
+      // 그 외 → 마지막 확정 종가 (prices[-1])
+      const previousClose = (marketOpen && lastDate === todayET && prices.length >= 2)
         ? prices[prices.length - 2].close
-        : (prices.length === 1 ? prices[0].close : null);
+        : (prices[prices.length - 1]?.close ?? null);
 
       return {
         ticker: meta.symbol || ticker,
